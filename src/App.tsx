@@ -1,35 +1,1288 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+import React, { useState, useRef, useEffect } from ‘react’;
+import { motion, useScroll, useTransform, useInView, AnimatePresence } from ‘framer-motion’;
+import { ArrowRight, Menu, X, Instagram, ExternalLink, Leaf, Zap, Hammer, ChevronRight, ChevronLeft, MapPin, AlertCircle, X as CloseIcon, ShoppingBag, TreeDeciduous, Map, Mail, Phone, Printer, ArrowUp, ArrowDown, Award, Users } from ‘lucide-react’;
+// — Configuration —
+const FONTS = {
+serifEn: ‘“Cormorant Garamond”, serif’,
+serifJp: ‘“Shippori Mincho”, “Yu Mincho”, “Hiragino Mincho ProN”, serif’,
+sans: ‘“Montserrat”, sans-serif’
+};
+const COLORS = {
+bg: ‘#E0DCD1’, // Greige
+text: ‘#1A1A1A’,
+accent: ‘#8C8575’,
+caution: ‘#9B2C2C’, // Deep Red
+wood: ‘#8B5A2B’ // Wood Accent
+};
+// 画像設定
+const HERO_IMAGES_SOURCE = [
+“https://rival-salmon-hvqpyv4hon.edgeone.app/_00A0262.jpeg”,
+“https://neutral-blush-wvf5zfxduo.edgeone.app/_00A0529.jpeg”,
+“https://secret-black-twuwzl5tyz.edgeone.app/_00A0643.jpeg”,
+“https://combined-olive-eqbeg5rue5.edgeone.app/_00A0680.jpeg”,
+“https://satisfactory-silver-8b2r2lsbvs.edgeone.app/_00A0976.jpeg”,
+“https://screeching-moccasin-jdnxko0bie.edgeone.app/_00B0532.jpeg”
+];
+// 文節コンポーネント
+const Bunsetsu = ({ children }) => (
+<span className="inline-block mr-[0.05em]">{children}</span>
+);
+// LINAWOOD ブランディングチーム
+const BRANDING_TEAM = [
+{ role: “CD / AD / D”, name: “MORITA Kengo”, id: “@hi_moritakengo” },
+{ role: “P”, name: “HIRATA Masakazu”, id: “@hirata.masakazu” },
+{ role: “C”, name: “SHIOYA Senta”, id: “@shy.snt” },
+{ role: “Producer / LP Design”, name: “KITAO Kazuma”, id: “@kazuma_kitao” },
+];
+// スペシャルサンクス・顧問
+const SPECIAL_THANKS = [
+{ role: “家具製造技術指導”, name: “tuki_to_fune”, id: “@tuki_to_fune” },
+{ role: “顧問”, name: “Kimiya Sato”, id: “@kimiyasato_life” },
+{ role: “顧問”, name: “midcity_mido”, id: “@midcity_mido” },
+];
+// 受賞歴データ
+const AWARDS = [
+{ id: 1, title: “Wood Design Award 2024”, desc: “ソーシャルデザイン部門 受賞”, img: “https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2000” },
+{ id: 2, title: “Hokkaido Good Design”, desc: “プロダクト部門 大賞”, img: “https://images.unsplash.com/photo-1617104424032-b9bd6972d0e4?q=80&w=2000” },
+{ id: 3, title: “KOKUYO Design Award”, desc: “ファイナリスト選出”, img: “https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=2000” },
+];
+// 北海道の樹種データ
+const HOKKAIDO_WOODS = [
+{
+id: ‘todomatsu’,
+name: ‘トドマツ’,
+desc: (
+<>
+<Bunsetsu>北海道で最も多い</Bunsetsu><Bunsetsu>針葉樹。</Bunsetsu>
+<Bunsetsu>材質は柔らかく</Bunsetsu><Bunsetsu>木目が通っており、</Bunsetsu>
+<Bunsetsu>その白さは</Bunsetsu><Bunsetsu>とても美しい。</Bunsetsu>
+<Bunsetsu>建築材から</Bunsetsu><Bunsetsu>産業用資材まで、</Bunsetsu>
+<Bunsetsu>用途は幅広い。</Bunsetsu>
+</>
+),
+img: ‘https://increased-violet-z0irqzpo7y.edgeone.app/IMG_9618.png’
+},
+{
+id: ‘karamatsu’,
+name: ‘カラマツ’,
+desc: (
+<>
+<Bunsetsu>日本産で唯一の</Bunsetsu><Bunsetsu>落葉針葉樹。</Bunsetsu>
+<Bunsetsu>乾燥技術の発達により</Bunsetsu><Bunsetsu>割れやねじれを克服し、</Bunsetsu>
+<Bunsetsu>その強度の高さを</Bunsetsu><Bunsetsu>生かして、</Bunsetsu>
+<Bunsetsu>建築材にも</Bunsetsu><Bunsetsu>用途を広げている。</Bunsetsu>
+</>
+),
+img: ‘https://forward-magenta-fhzpyq5faa.edgeone.app/IMG_9619.png’
+},
+{
+id: ‘sugi’,
+name: ‘（道南）スギ’,
+desc: (
+<>
+<Bunsetsu>道南地方で</Bunsetsu><Bunsetsu>古くから植林されている</Bunsetsu>
+<Bunsetsu>日本最北限の杉。</Bunsetsu>
+<Bunsetsu>北海道の厳しい</Bunsetsu><Bunsetsu>自然環境で育ったスギは</Bunsetsu>
+<Bunsetsu>良質な材が多い。</Bunsetsu>
+<Bunsetsu>建築材から</Bunsetsu><Bunsetsu>割り箸まで</Bunsetsu>
+<Bunsetsu>用途は幅広い。</Bunsetsu>
+</>
+),
+img: ‘https://crazy-tomato-kdqs3a7n4w.edgeone.app/IMG_9620.png’
+},
+{
+id: ‘mizunara’,
+name: ‘ミズナラ’,
+desc: (
+<>
+<Bunsetsu>北海道を代表する</Bunsetsu><Bunsetsu>落葉広葉樹。</Bunsetsu>
+<Bunsetsu>落ち着いた色合いで、</Bunsetsu><Bunsetsu>硬くて強度もあるため、</Bunsetsu>
+<Bunsetsu>家具材や</Bunsetsu><Bunsetsu>床材に使われるなど、</Bunsetsu>
+<Bunsetsu>日本国内外での</Bunsetsu><Bunsetsu>評価が高い。</Bunsetsu>
+</>
+),
+img: ‘https://related-crimson-1jz6grvan3.edgeone.app/IMG_9621.png’
+},
+{
+id: ‘yachidamo’,
+name: ‘ヤチダモ’,
+desc: (
+<>
+<Bunsetsu>北海道に多く自生する</Bunsetsu><Bunsetsu>落葉広葉樹。</Bunsetsu>
+<Bunsetsu>木目が素直で、</Bunsetsu><Bunsetsu>強度とねばりがあり、</Bunsetsu>
+<Bunsetsu>弾性が高い。</Bunsetsu>
+<Bunsetsu>家具材、</Bunsetsu><Bunsetsu>内装材、</Bunsetsu>
+<Bunsetsu>工芸品など</Bunsetsu><Bunsetsu>用途は多彩。</Bunsetsu>
+</>
+),
+img: ‘https://beneficial-yellow-2nm3mkbxxj.edgeone.app/IMG_9622.png’
+},
+{
+id: ‘kaba’,
+name: ‘カバ’,
+desc: (
+<>
+<Bunsetsu>北海道らしい</Bunsetsu><Bunsetsu>景観を彩る、</Bunsetsu>
+<Bunsetsu>道内で最も蓄積が多い</Bunsetsu><Bunsetsu>落葉広葉樹。</Bunsetsu>
+<Bunsetsu>用途は、</Bunsetsu><Bunsetsu>家具材、</Bunsetsu><Bunsetsu>合板材、</Bunsetsu>
+<Bunsetsu>床板、</Bunsetsu><Bunsetsu>爪楊枝など。</Bunsetsu>
+<Bunsetsu>特にマカバは</Bunsetsu><Bunsetsu>銘木として</Bunsetsu>
+<Bunsetsu>高値で取引されている。</Bunsetsu>
+</>
+),
+img: ‘https://local-blush-trb8yb7omb.edgeone.app/IMG_9623.png’
 }
+];
+const PRODUCTS = [
+{
+id: 1,
+title: “LINAWOOD”,
+category: “Signature”,
+desc: (
+<>
+<Bunsetsu>緑川木材の魂。</Bunsetsu>
+<Bunsetsu>北海道産カラマツの</Bunsetsu><Bunsetsu>積層合板。</Bunsetsu>
+<Bunsetsu>圧倒的な強度と、</Bunsetsu><Bunsetsu>断面の美しさが特徴。</Bunsetsu>
+</>
+),
+src: “https://iinawood.edgeone.app/__lina_KV02.jpeg”,
+link: “https://linawood.jp/”,
+linkText: “公式サイトへ”,
+buyLink: “#”,
+buyText: “ご購入はこちらから”,
+cases: [
+“https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070”,
+“https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2053”,
+“https://images.unsplash.com/photo-1600210492493-0946911123ea?q=80&w=1974”,
+“https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?q=80&w=2070”
+]
+},
+{
+id: 2,
+title: “外壁材”,
+category: “Exterior”,
+desc: (
+<>
+<Bunsetsu>厳しい北国の</Bunsetsu><Bunsetsu>気候に耐えうる</Bunsetsu><Bunsetsu>耐久性と、</Bunsetsu>
+<Bunsetsu>経年変化を</Bunsetsu><Bunsetsu>楽しめる風合い。</Bunsetsu>
+</>
+),
+src: “https://karagai.edgeone.app/DSCF8099.jpeg”,
+buyLink: “#”,
+buyText: “ご購入はこちらから”,
+cases: [
+“https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=2070”,
+“https://images.unsplash.com/photo-1600596542815-3ad19b6b67b5?q=80&w=1975”,
+“https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=1974”,
+“https://images.unsplash.com/photo-1523217582562-09d0def993a6?q=80&w=2080”
+]
+},
+{
+id: 3,
+title: “カラマツフローリング”,
+category: “Flooring”,
+desc: (
+<>
+<Bunsetsu>赤みがかった</Bunsetsu><Bunsetsu>温かみのある色合いと、</Bunsetsu>
+<Bunsetsu>力強い木目。</Bunsetsu>
+<Bunsetsu>店舗や</Bunsetsu><Bunsetsu>土足環境にも。</Bunsetsu>
+</>
+),
+src: “https://scornful-turquoise-toijnloplt.edgeone.app/DSCF8083.jpeg”,
+buyLink: “#”,
+buyText: “ご購入はこちらから”,
+cases: [
+“https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=2070”,
+“https://images.unsplash.com/photo-1595428774223-ef52624120d2?q=80&w=1974”,
+“https://images.unsplash.com/photo-1595515106967-0c3fa4f3af7b?q=80&w=2070”,
+“https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2070”
+]
+},
+{
+id: 4,
+title: “トドマツフローリング”,
+category: “Flooring”,
+desc: (
+<>
+<Bunsetsu>白く清潔感のある</Bunsetsu><Bunsetsu>色味と、</Bunsetsu>
+<Bunsetsu>柔らかな足触り。</Bunsetsu>
+<Bunsetsu>光を反射し、</Bunsetsu><Bunsetsu>空間を明るく。</Bunsetsu>
+</>
+),
+src: “https://todofloor.edgeone.app/DSCF8085.jpeg”,
+buyLink: “#”,
+buyText: “ご購入はこちらから”,
+cases: [
+“https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?q=80&w=2070”,
+“https://images.unsplash.com/photo-1522771753035-4a50097a1f54?q=80&w=2070”,
+“https://images.unsplash.com/photo-1484154218962-a1c002085d2f?q=80&w=2070”,
+“https://images.unsplash.com/photo-1469022563428-aa04fef9f5a2?q=80&w=2073”
+]
+},
+{
+id: 5,
+title: “スリット羽目板”,
+category: “Paneling”,
+desc: (
+<>
+<Bunsetsu>繊細なスリット加工が</Bunsetsu><Bunsetsu>施された羽目板。</Bunsetsu>
+<Bunsetsu>光と影の</Bunsetsu><Bunsetsu>コントラストを</Bunsetsu><Bunsetsu>生み出す。</Bunsetsu>
+</>
+),
+src: “https://slithame.edgeone.app/DSCF8143.jpeg”,
+buyLink: “#”,
+buyText: “ご購入はこちらから”,
+cases: [
+“https://images.unsplash.com/photo-1507089947368-19c1da9775ae?q=80&w=2076”,
+“https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=2070”,
+“https://images.unsplash.com/photo-1598928506311-c55ded91a20c?q=80&w=2070”,
+“https://images.unsplash.com/photo-1534349762913-577363fde833?q=80&w=2069”
+]
+},
+{
+id: 6,
+title: “テーパー溝羽目板”,
+category: “Paneling”,
+desc: (
+<>
+<Bunsetsu>シャープな</Bunsetsu><Bunsetsu>ラインを強調。</Bunsetsu>
+<Bunsetsu>モダンな建築空間に</Bunsetsu><Bunsetsu>調和するデザイン。</Bunsetsu>
+</>
+),
+src: “https://hameita.edgeone.app/DSCF8206.jpeg”,
+buyLink: “#”,
+buyText: “ご購入はこちらから”,
+cases: [
+“https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?q=80&w=2070”,
+“https://images.unsplash.com/photo-1533090161767-e6ffed986c88?q=80&w=2069”,
+“https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=2070”,
+“https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=2069”
+]
+},
+{
+id: 7,
+title: “巾木”,
+category: “Baseboard”,
+desc: (
+<>
+<Bunsetsu>床と壁の境界を</Bunsetsu><Bunsetsu>整える、</Bunsetsu><Bunsetsu>名脇役。</Bunsetsu>
+<Bunsetsu>空間全体の</Bunsetsu><Bunsetsu>品格を</Bunsetsu><Bunsetsu>底上げする。</Bunsetsu>
+</>
+),
+src: “https://habaki.edgeone.app/DSCF8113.jpeg”,
+buyLink: “#”,
+buyText: “ご購入はこちらから”,
+cases: [
+“https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?q=80&w=2070&auto=format&fit=crop”,
+“https://images.unsplash.com/photo-1588854337221-4cf9fa96059c?q=80&w=2070”,
+“https://images.unsplash.com/photo-1600121848594-d8644e57abab?q=80&w=2070”,
+“https://images.unsplash.com/photo-1600489000022-c2086d79f9d4?q=80&w=1935”
+]
+},
+{
+id: 8,
+title: “家具”,
+category: “Furniture”,
+desc: (
+<>
+<Bunsetsu>LINAWOODを使用した</Bunsetsu><Bunsetsu>オリジナル家具。</Bunsetsu>
+<Bunsetsu>使い込むほどに</Bunsetsu><Bunsetsu>愛着が湧く。</Bunsetsu>
+</>
+),
+src: “https://images.unsplash.com/photo-1618220179428-22790b461013?q=80&w=2027&auto=format&fit=crop”,
+buyLink: “#”,
+buyText: “ご購入はこちらから”,
+cases: [
+“https://images.unsplash.com/photo-1592078615290-033ee584e267?q=80&w=1780”,
+“https://images.unsplash.com/photo-1538688525198-9b88f6f53126?q=80&w=1974”,
+“https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?q=80&w=2064”,
+“https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=2070”
+]
+},
+{
+id: 9,
+title: “しましまつみ木”,
+category: “Toy”,
+desc: (
+<>
+<Bunsetsu>LINAWOODの</Bunsetsu><Bunsetsu>積層面を生かした、</Bunsetsu>
+<Bunsetsu>美しい</Bunsetsu><Bunsetsu>ストライプ模様の</Bunsetsu><Bunsetsu>積み木。</Bunsetsu>
+<Bunsetsu>子供の想像力を</Bunsetsu><Bunsetsu>育む。</Bunsetsu>
+</>
+),
+src: “https://shimashima.edgeone.app/IMG_3787.jpeg”,
+buyLink: “#”,
+buyText: “ご購入はこちらから”,
+cases: [
+“https://images.unsplash.com/photo-1587654780291-39c940483713?q=80&w=2070”,
+“https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?q=80&w=2075”,
+“https://images.unsplash.com/photo-1560785496-3c9d27877182?q=80&w=2070”,
+“https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?q=80&w=2070”
+]
+},
+{
+id: 10,
+title: “LINABEAR”,
+category: “Object”,
+desc: (
+<>
+<Bunsetsu>北海道の象徴である</Bunsetsu><Bunsetsu>熊を、</Bunsetsu>
+<Bunsetsu>モダンなフォルムで</Bunsetsu><Bunsetsu>表現した</Bunsetsu><Bunsetsu>木製オブジェ。</Bunsetsu>
+</>
+),
+src: “https://linabear.edgeone.app/att.2HbVptv7GjcfO4yy0mheGruKOvYP58FC7_mCTyhA9qY.jpeg”,
+buyLink: “#”,
+buyText: “ご購入はこちらから”,
+cases: [
+“https://images.unsplash.com/photo-1589254065878-42c9da997008?q=80&w=2070”,
+“https://images.unsplash.com/photo-1549887552-93f8efb4133f?q=80&w=2070”,
+“https://images.unsplash.com/photo-1516981879613-9f5da904015f?q=80&w=1974”,
+“https://images.unsplash.com/photo-1535572290543-960a8046f5af?q=80&w=2070”
+]
+},
+];
+const HISTORY = [
+{ year: “昭和30年”, event: “初代緑川勝一により北海道常呂郡佐呂間町にて緑川木材を創業。” },
+{ year: “昭和35年”, event: “緑川木材株式会社を設立。緑川勝一が代表取締役に就任。” },
+{ year: “昭和49年”, event: “集成材の生産を開始。” },
+{ year: “昭和52年”, event: “上川郡愛別町に工場を移転。” },
+{ year: “昭和56年”, event: “家具部材の生産を開始。” },
+{ year: “平成05年”, event: “各種木材加工品の生産を開始。” },
+{ year: “平成10年”, event: “緑川倍生が代表取締役に就任。” },
+{ year: “平成14年”, event: “3層パネルの生産を開始。” },
+{ year: “平成25年”, event: “代表取締役に緑川榮二が就任。” },
+{ year: “令和07年”, event: “緑川新之介が代表取締役に就任。” },
+];
+const Navigation = () => {
+const [isOpen, setIsOpen] = useState(false);
+const handleLinkClick = (e, id) => {
+e.preventDefault();
+setIsOpen(false);
+const element = document.getElementById(id);
+if (element) {
+element.scrollIntoView({ behavior: ‘smooth’ });
+}
+};
+return (
+<header className="fixed top-0 left-0 right-0 z-50 flex justify-end items-center p-6 md:p-10 text-[#E0DCD1] mix-blend-difference pointer-events-none">
+<button onClick={() => setIsOpen(!isOpen)} className=“group flex items-center gap-3 focus:outline-none relative z-50 pointer-events-auto”>
+<span className=“hidden md:block text-[10px] tracking-[0.25em] group-hover:opacity-70 transition-opacity uppercase font-medium” style={{ fontFamily: FONTS.sans }}>Menu</span>
+<div className="relative w-8 h-8 flex items-center justify-center">
+{isOpen ? <X size={24} /> : <Menu size={24} />}
+</div>
+</button>
 
-export default App
+  <motion.div 
+    initial={{ opacity: 0, clipPath: 'circle(0% at 100% 0%)' }}
+    animate={{ opacity: isOpen ? 1 : 0, clipPath: isOpen ? 'circle(150% at 100% 0%)' : 'circle(0% at 100% 0%)' }}
+    transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+    style={{ pointerEvents: isOpen ? 'auto' : 'none' }}
+    className="fixed inset-0 bg-[#1A1A1A] text-[#E0DCD1] flex flex-col justify-center items-center z-40"
+  >
+    <nav className="flex flex-col gap-6 text-center">
+      {['Concept', 'Values', 'Woods', 'Products', 'Awards', 'Partner', 'History', 'Company', 'Contact'].map((item, i) => (
+        <motion.a 
+          key={item}
+          href={`#${item.toLowerCase()}`}
+          onClick={(e) => handleLinkClick(e, item.toLowerCase())}
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: isOpen ? 1 : 0, y: 0 }}
+          transition={{ delay: 0.3 + (i * 0.1), duration: 0.8 }}
+          className="text-3xl md:text-5xl font-light tracking-tight hover:italic transition-all duration-300 cursor-pointer opacity-70 hover:opacity-100 relative z-50 pointer-events-auto"
+          style={{ fontFamily: FONTS.serifEn }}
+        >
+          {item}
+        </motion.a>
+      ))}
+    </nav>
+  </motion.div>
+</header>
+
+
+);
+};
+// — Hero Section —
+const HeroSection = () => {
+const [index, setIndex] = useState(0);
+const [images, setImages] = useState(() => {
+const shuffle = (array) => {
+const newArr = […array];
+for (let i = newArr.length - 1; i > 0; i–) {
+const j = Math.floor(Math.random() * (i + 1));
+[newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+}
+return newArr;
+};
+return shuffle(HERO_IMAGES_SOURCE);
+});
+const { scrollY } = useScroll();
+const textY = useTransform(scrollY, [0, 500], [0, 200]);
+const opacity = useTransform(scrollY, [0, 400], [1, 0]);
+useEffect(() => {
+if (images.length === 0) return;
+const timer = setInterval(() => {
+setIndex((prevIndex) => (prevIndex + 1) % images.length);
+}, 6000);
+return () => clearInterval(timer);
+}, [images]);
+if (images.length === 0) return null;
+return (
+<section className="relative h-screen w-full overflow-hidden bg-[#1A1A1A] text-[#E0DCD1]">
+<div className="absolute inset-0 z-0 bg-black">
+{images.map((img, i) => (
+<motion.img
+key={i}
+src={img}
+alt={Slide ${i}}
+initial={{ opacity: 0, scale: 1.1 }}
+animate={{
+opacity: i === index ? 0.8 : 0,
+scale: i === index ? 1 : 1.1,
+zIndex: i === index ? 1 : 0
+}}
+transition={{ duration: 2.5, ease: “easeInOut” }}
+className=“absolute inset-0 w-full h-full object-cover”
+style={{ pointerEvents: ‘none’ }}
+/>
+))}
+</div>
+
+  <motion.div style={{ y: textY, opacity }} className="relative z-10 h-full flex flex-col justify-center items-center text-center px-4 pointer-events-none">
+    <motion.div
+      initial={{ opacity: 0, y: 30, filter: 'blur(10px)' }}
+      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      transition={{ duration: 2.5, ease: "easeOut", delay: 0.5 }}
+    >
+      <p className="text-xs md:text-sm tracking-[0.3em] uppercase mb-8 opacity-90 drop-shadow-md font-light" style={{ fontFamily: FONTS.sans }}>
+        Hokkaido Premium Wood
+      </p>
+      <h1 className="text-5xl md:text-8xl font-medium tracking-tight leading-none mb-8 drop-shadow-xl" style={{ fontFamily: FONTS.serifEn }}>
+        Midorikawa<br/>Mokuzai
+      </h1>
+    </motion.div>
+  </motion.div>
+  
+  <motion.div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10" animate={{ y: [0, 10, 0] }} transition={{ repeat: Infinity, duration: 2 }} style={{ opacity }}>
+    <div className="w-[1px] h-20 bg-white/40" />
+  </motion.div>
+</section>
+
+
+);
+};
+// — Concept & Values —
+const ConceptSection = () => {
+const ref = useRef(null);
+const isInView = useInView(ref, { once: false, amount: 0.3 });
+return (
+<section id="concept" className="min-h-[80vh] flex items-center justify-center py-32 px-6 md:px-20 relative z-10">
+<div className="max-w-5xl w-full text-center md:text-left">
+<div className="mb-16 md:mb-24 text-center md:text-left">
+<h2 className=“text-3xl md:text-4xl font-light mb-2 text-[#1A1A1A]” style={{ fontFamily: FONTS.serifEn }}>
+Concept
+</h2>
+<p className=“text-[10px] tracking-[0.2em] uppercase opacity-40” style={{ fontFamily: FONTS.sans }}>
+理念
+</p>
+</div>
+
+    <div ref={ref} className="space-y-12 pl-0 md:pl-10 text-center md:text-left">
+      <motion.h2 
+        className="text-lg md:text-2xl lg:text-3xl leading-relaxed text-[#1A1A1A]" 
+        style={{ fontFamily: FONTS.serifJp }} 
+        initial={{ opacity: 0, filter: 'blur(5px)' }} 
+        animate={isInView ? { opacity: 1, filter: 'blur(0px)' } : { opacity: 0, filter: 'blur(5px)' }} 
+        transition={{ duration: 1.2 }}
+      >
+        <Bunsetsu>森の命を、</Bunsetsu><Bunsetsu>人の暮らしへ</Bunsetsu><Bunsetsu>つなぐ。</Bunsetsu>
+      </motion.h2>
+      
+      <motion.div
+        initial={{ opacity: 0, y: 20 }} 
+        animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }} 
+        transition={{ duration: 1.2, delay: 0.3 }}
+        className="text-sm md:text-base leading-loose text-[#1A1A1A]/70 font-light" 
+        style={{ fontFamily: FONTS.serifJp }} 
+      >
+         <p className="mb-1">
+            <Bunsetsu>余すことなく</Bunsetsu><Bunsetsu>価値に変える</Bunsetsu><Bunsetsu>プロダクトを</Bunsetsu><br/>
+            <Bunsetsu>枯れることなく</Bunsetsu><Bunsetsu>生み出す。</Bunsetsu>
+         </p>
+      </motion.div>
+    </div>
+  </div>
+</section>
+
+
+);
+};
+// ValuesBlock
+const ValuesBlock = ({ title, num, desc, icon: Icon, delay }) => {
+const ref = useRef(null);
+const isInView = useInView(ref, { once: false, amount: 0.4 });
+return (
+<motion.div ref={ref} initial={{ opacity: 0, filter: ‘blur(5px)’, y: 20 }} animate={isInView ? { opacity: 1, filter: ‘blur(0px)’, y: 0 } : { opacity: 0, filter: ‘blur(5px)’, y: 20 }} transition={{ duration: 1.2, delay: delay }} className=“py-16 border-t border-[#1A1A1A]/10 last:border-b group flex flex-col items-center text-center”>
+<div className="flex flex-col items-center gap-6 max-w-3xl">
+<div className="flex items-center gap-3">
+<span className=“text-xs tracking-widest opacity-30 group-hover:opacity-100 transition-opacity” style={{ fontFamily: FONTS.sans }}>0{num}</span>
+<Icon size={20} strokeWidth={1} className="opacity-40 group-hover:opacity-100 transition-opacity" />
+</div>
+
+    <h3 className="text-lg md:text-2xl font-medium leading-normal text-[#1A1A1A] text-balance" style={{ fontFamily: FONTS.serifJp }}>
+      {title}
+    </h3>
+    
+    <p className="text-sm md:text-base leading-loose opacity-60 group-hover:opacity-80 transition-opacity text-pretty" style={{ fontFamily: FONTS.serifJp }}>
+      {desc}
+    </p>
+  </div>
+</motion.div>
+
+
+);
+};
+const ValuesSection = () => {
+return (
+<section id="values" className="py-20 px-6 md:px-20 relative z-10">
+<div className="max-w-5xl mx-auto">
+<div className="mb-16 md:mb-24 text-center">
+<h2 className=“text-3xl md:text-4xl font-light mb-2 text-[#1A1A1A]” style={{ fontFamily: FONTS.serifEn }}>Values</h2>
+<p className=“text-[10px] tracking-[0.2em] uppercase opacity-40” style={{ fontFamily: FONTS.sans }}>行動指針</p>
+</div>
+<div className="flex flex-col">
+<ValuesBlock
+title={
+<><Bunsetsu>隙間（ニッチ）を</Bunsetsu><Bunsetsu>王道に変える</Bunsetsu></>
+}
+num=“1”
+desc={
+<>
+<Bunsetsu>ライン化できない</Bunsetsu><Bunsetsu>手間にこそ</Bunsetsu><Bunsetsu>勝機がある。</Bunsetsu>
+<br className="hidden md:inline" />
+<Bunsetsu>他社が</Bunsetsu><Bunsetsu>やらないことを</Bunsetsu><Bunsetsu>圧倒的品質で</Bunsetsu><Bunsetsu>やる。</Bunsetsu>
+</>
+}
+icon={Leaf}
+delay={0}
+/>
+<ValuesBlock
+title={
+<><Bunsetsu>無理難題を</Bunsetsu><Bunsetsu>面白がる</Bunsetsu></>
+}
+num=“2”
+desc={
+<>
+<Bunsetsu>端材や</Bunsetsu><Bunsetsu>規格外の木も</Bunsetsu><Bunsetsu>どう活かすかを</Bunsetsu><Bunsetsu>楽しむ。</Bunsetsu>
+<br className="hidden md:inline" />
+<Bunsetsu>「できない」の前に</Bunsetsu><Bunsetsu>アイデアを</Bunsetsu><Bunsetsu>出す。</Bunsetsu>
+</>
+}
+icon={Zap}
+delay={0.1}
+/>
+<ValuesBlock
+title={
+<><Bunsetsu>走りながら考え</Bunsetsu><Bunsetsu>形にしてから</Bunsetsu><Bunsetsu>直す</Bunsetsu></>
+}
+num=“3”
+desc={
+<>
+<Bunsetsu>100回の議論より</Bunsetsu><Bunsetsu>1つの試作。</Bunsetsu>
+<br className="hidden md:inline" />
+<Bunsetsu>発散と収束を</Bunsetsu><Bunsetsu>高速で回し</Bunsetsu><Bunsetsu>正解へ近づく。</Bunsetsu>
+</>
+}
+icon={Hammer}
+delay={0.2}
+/>
+</div>
+</div>
+</section>
+);
+};
+// — Wood Types Section —
+const WoodTypesSection = () => {
+return (
+<section id=“woods” className=“py-24 px-6 md:px-20” style={{ backgroundColor: COLORS.bg }}>
+<div className="max-w-5xl mx-auto">
+<div className="mb-16 text-center md:text-left">
+
+      {/* Logo Heading Update */}
+      <div className="mb-6">
+         <img 
+           src="https://glad-copper-j7y1kfrevc.edgeone.app/IMG_9652.png" 
+           alt="HOKKAIDO WOOD" 
+           className="w-48 md:w-64 mx-auto md:mx-0 object-contain"
+         />
+      </div>
+
+      <p className="text-[10px] tracking-[0.2em] uppercase opacity-40 mb-6" style={{ fontFamily: FONTS.sans }}>
+        緑川木材が扱う北海道の木
+      </p>
+      <p className="text-sm md:text-base leading-loose opacity-60 max-w-2xl" style={{ fontFamily: FONTS.serifJp }}>
+        <Bunsetsu>私たち</Bunsetsu><Bunsetsu>緑川木材は、</Bunsetsu>
+        <Bunsetsu>HOKKAIDO WOOD（北海道産木材）</Bunsetsu><Bunsetsu>の中でも、</Bunsetsu>
+        <Bunsetsu>特に以下の</Bunsetsu><Bunsetsu>樹種を</Bunsetsu><Bunsetsu>主力として</Bunsetsu>
+        <Bunsetsu>加工・製造しています。</Bunsetsu>
+        <br className="hidden md:block my-4"/>
+        <Bunsetsu>また、</Bunsetsu><Bunsetsu>ここにある</Bunsetsu><Bunsetsu>代表的な</Bunsetsu><Bunsetsu>樹種だけでなく、</Bunsetsu>
+        <Bunsetsu>その他の</Bunsetsu><Bunsetsu>北海道産広葉樹についても、</Bunsetsu>
+        <Bunsetsu>お客様の</Bunsetsu><Bunsetsu>要望に合わせて</Bunsetsu><Bunsetsu>積極的に</Bunsetsu><Bunsetsu>加工を</Bunsetsu><Bunsetsu>行っています。</Bunsetsu>
+      </p>
+    </div>
+
+    <div className="grid grid-cols-2 md:grid-cols-2 gap-4 md:gap-8 mb-8">
+      {HOKKAIDO_WOODS.map((wood) => (
+        <motion.div 
+          key={wood.id}
+          className="group relative aspect-square md:aspect-[4/3] bg-transparent cursor-pointer overflow-hidden rounded-sm shadow-none hover:shadow-none transition-shadow" 
+          whileTap={{ scale: 0.98 }}
+        >
+          <div className="absolute inset-0 bg-transparent">
+            <img 
+              src={wood.img} 
+              alt={wood.name} 
+              loading="lazy"
+              className="w-full h-full object-contain p-8 md:p-12 opacity-100 mix-blend-multiply group-hover:scale-105 transition-transform duration-700 -translate-y-4" 
+            />
+          </div>
+
+          <div className="absolute bottom-4 left-4 z-20">
+            <h3 className="text-base md:text-lg font-medium text-[#1A1A1A] drop-shadow-sm" style={{ fontFamily: FONTS.serifJp }}>
+              {wood.name}
+            </h3>
+          </div>
+
+          <div className="absolute inset-0 bg-[#1A1A1A]/95 p-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-30 translate-y-4 group-hover:translate-y-0 rounded-sm">
+            <p className="text-xs md:text-sm leading-relaxed text-white font-light" style={{ fontFamily: FONTS.serifJp }}>
+              {wood.desc}
+            </p>
+          </div>
+        </motion.div>
+      ))}
+    </div>
+
+    <div className="text-right mb-16">
+       <p className="text-[10px] opacity-40" style={{ fontFamily: FONTS.sans }}>
+         Cited from HOKKAIDO WOOD Official Page
+       </p>
+    </div>
+
+    <div className="flex justify-center relative z-40">
+      <div className="bg-white px-6 py-6 md:px-8 border border-[#E0DCD1] text-center max-w-lg w-full relative">
+         <TreeDeciduous size={24} className="mx-auto mb-3 text-[#8C8575]" />
+         <p className="text-sm md:text-base font-medium mb-3" style={{ fontFamily: FONTS.serifJp }}>
+           <Bunsetsu>緑川木材は</Bunsetsu><Bunsetsu>HOKKAIDO WOOD の</Bunsetsu><Bunsetsu>メンバーです。</Bunsetsu>
+         </p>
+         <div className="flex justify-center">
+            <a 
+              href="https://hokkaidowood.com/"
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 border-b border-[#1A1A1A] pb-1 hover:opacity-60 transition-opacity cursor-pointer pointer-events-auto select-none"
+              style={{ position: 'relative', zIndex: 100 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <span className="text-[10px] tracking-widest" style={{ fontFamily: FONTS.sans }}>HOKKAIDO WOOD とは？</span>
+              <ArrowRight size={10} />
+            </a>
+         </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+);
+};
+const ProductsSection = () => {
+const [activeId, setActiveId] = useState(1);
+const [selectedImage, setSelectedImage] = useState(null);
+const activeProduct = PRODUCTS.find(p => p.id === activeId);
+useEffect(() => {
+const selectedThumb = document.getElementById(product-thumb-${activeId});
+if (selectedThumb) {
+selectedThumb.scrollIntoView({ behavior: ‘smooth’, block: ‘nearest’, inline: ‘center’ });
+}
+}, [activeId]);
+const handlePrev = () => {
+const currentIndex = PRODUCTS.findIndex(p => p.id === activeId);
+const prevIndex = (currentIndex - 1 + PRODUCTS.length) % PRODUCTS.length;
+setActiveId(PRODUCTS[prevIndex].id);
+};
+const handleNext = () => {
+const currentIndex = PRODUCTS.findIndex(p => p.id === activeId);
+const nextIndex = (currentIndex + 1) % PRODUCTS.length;
+setActiveId(PRODUCTS[nextIndex].id);
+};
+const getVisibleThumbnails = () => {
+const currentIndex = PRODUCTS.findIndex(p => p.id === activeId);
+const visibleCount = 5;
+const offset = Math.floor(visibleCount / 2);
+
+let thumbnails = [];
+for (let i = -offset; i <= offset; i++) {
+  let index = (currentIndex + i) % PRODUCTS.length;
+  if (index < 0) index += PRODUCTS.length;
+  thumbnails.push(PRODUCTS[index]);
+}
+return thumbnails;
+
+
+};
+const visibleThumbnails = getVisibleThumbnails();
+return (
+<section id="products" className="py-12 bg-[#1A1A1A] text-[#E0DCD1] overflow-hidden min-h-screen flex flex-col justify-center relative">
+<div className="px-6 md:px-12 w-full max-w-7xl mx-auto relative z-20">
+
+    <div className="flex justify-between items-baseline mb-4 border-b border-white/10 pb-2">
+      <h2 className="text-3xl font-light" style={{ fontFamily: FONTS.serifEn }}>Products</h2>
+      <p className="text-[10px] tracking-[0.2em] uppercase opacity-40" style={{ fontFamily: FONTS.sans }}>製品紹介</p>
+    </div>
+
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
+      
+      <div className="lg:col-span-3 relative z-30">
+         <p className="text-[10px] opacity-40 mb-2 tracking-widest flex items-center gap-2">
+            SELECT PRODUCT <ChevronRight size={10} />
+         </p>
+         
+         <div className="flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-4 lg:pb-0 items-center lg:items-stretch h-full scrollbar-hide snap-x">
+          <div className="flex lg:hidden gap-2">
+             {PRODUCTS.map((item) => (
+                <motion.div 
+                  key={`mobile-${item.id}`}
+                  id={`product-thumb-${item.id}`}
+                  onClick={() => setActiveId(item.id)}
+                  className={`
+                    flex-none w-[100px] cursor-pointer group transition-all duration-300 
+                    flex flex-col items-center gap-2 p-2 rounded border border-transparent snap-center
+                    ${item.id === activeId ? 'bg-white/10 opacity-100 border-white/20' : 'opacity-40 hover:opacity-70'}
+                  `}
+                >
+                  <div className="w-10 h-10 overflow-hidden bg-white/10 shrink-0 rounded-sm"> 
+                    <img src={item.src} alt={item.title} className="w-full h-full object-cover" />
+                  </div>
+                  <p className="text-[10px] tracking-wider font-light truncate" style={{ fontFamily: FONTS.serifJp }}>{item.title}</p>
+                </motion.div>
+             ))}
+          </div>
+
+          <div className="hidden lg:flex flex-col gap-2">
+            {visibleThumbnails.map((item, index) => {
+               const isCenter = item.id === activeId;
+               return (
+                <motion.div 
+                  key={`desktop-${item.id}-${index}`} 
+                  layout
+                  onClick={() => setActiveId(item.id)}
+                  className={`
+                    flex-none w-full cursor-pointer group transition-all duration-300 
+                    flex items-center gap-3 p-2 rounded border border-transparent
+                    ${isCenter ? 'bg-white/10 opacity-100 border-white/20' : 'opacity-40 hover:opacity-70'}
+                  `}
+                >
+                  <div className="w-12 h-12 overflow-hidden bg-white/10 shrink-0 rounded-sm"> 
+                    <img src={item.src} alt={item.title} className="w-full h-full object-cover" />
+                  </div>
+                  <p className={`text-xs tracking-wider font-light truncate transition-colors ${isCenter ? 'text-white' : 'text-gray-400'}`} style={{ fontFamily: FONTS.serifJp }}>
+                    {item.title}
+                  </p>
+                </motion.div>
+              );
+            })}
+          </div>
+         </div>
+         
+         <div className="hidden lg:flex justify-between mt-2 opacity-30 px-2">
+           <ChevronLeft size={16} />
+           <span className="text-[9px] tracking-widest uppercase">Loop</span>
+           <ChevronRight size={16} />
+         </div>
+      </div>
+
+      <div className="lg:col-span-9 flex flex-col justify-start relative z-20">
+         {/* Aspect Ratio Changed to Square */}
+         <div className="aspect-square w-full max-w-2xl mx-auto relative overflow-hidden bg-white/5 mb-3 group rounded-sm shadow-2xl">
+           <button 
+             onClick={handlePrev}
+             className="absolute left-2 top-1/2 -translate-y-1/2 z-30 p-2 bg-black/40 hover:bg-black/80 text-white rounded-full transition-all opacity-100 pointer-events-auto backdrop-blur-sm"
+           >
+             <ChevronLeft size={20} />
+           </button>
+           <button 
+             onClick={handleNext}
+             className="absolute right-2 top-1/2 -translate-y-1/2 z-30 p-2 bg-black/40 hover:bg-black/80 text-white rounded-full transition-all opacity-100 pointer-events-auto backdrop-blur-sm"
+           >
+             <ChevronRight size={20} />
+           </button>
+
+           <AnimatePresence mode="wait">
+             <motion.img 
+               key={activeProduct.id}
+               src={activeProduct.src}
+               alt={activeProduct.title}
+               initial={{ opacity: 0, scale: 1.05 }}
+               animate={{ opacity: 1, scale: 1 }}
+               exit={{ opacity: 0 }}
+               transition={{ duration: 0.5 }}
+               className="absolute inset-0 w-full h-full object-cover"
+             />
+           </AnimatePresence>
+         </div>
+
+         {/* Case Study Integration */}
+         <AnimatePresence mode="wait">
+            <motion.div
+              key={activeProduct.id}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="max-w-2xl mx-auto w-full"
+            >
+              <div className="flex gap-2 mb-4 justify-center">
+                {activeProduct.cases.slice(0, 3).map((src, index) => (
+                    <motion.div 
+                    key={`${activeProduct.id}-case-${index}`}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileHover={{ scale: 1.5, zIndex: 50 }}
+                    onClick={() => setSelectedImage(src)}
+                    className="w-16 h-16 md:w-20 md:h-20 bg-white/5 relative group cursor-pointer overflow-hidden border border-white/5 hover:border-white/30 transition-all shadow-lg"
+                    >
+                    <img src={src} alt="Case Study" className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity duration-300" />
+                    </motion.div>
+                ))}
+              </div>
+
+              <div className="flex justify-between items-baseline mb-1">
+                 <h3 className="text-lg md:text-xl font-medium" style={{ fontFamily: FONTS.serifJp }}>{activeProduct.title}</h3>
+                 <span className="text-[9px] tracking-widest uppercase opacity-50 block" style={{ fontFamily: FONTS.sans }}>{activeProduct.category}</span>
+              </div>
+              
+              <p className="text-xs leading-relaxed opacity-80 mb-3 min-h-[3em]" style={{ fontFamily: FONTS.serifJp }}>{activeProduct.desc}</p>
+              
+              <div className="flex flex-col md:flex-row gap-2 relative z-[100]">
+                {activeProduct.link && (
+                  <div className="flex-1 relative">
+                    <a 
+                      href={activeProduct.link} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 border border-white/30 hover:bg-white hover:text-black hover:border-white px-4 py-3 transition-all duration-300 cursor-pointer pointer-events-auto w-full h-full bg-[#1A1A1A]/50 md:bg-transparent backdrop-blur-md md:backdrop-blur-none"
+                      style={{ position: 'relative', zIndex: 100 }}
+                    >
+                      <ExternalLink size={12} />
+                      <span className="text-[10px] tracking-widest" style={{ fontFamily: FONTS.sans }}>{activeProduct.linkText}</span>
+                    </a>
+                  </div>
+                )}
+                <div className="flex-1 relative">
+                   <a 
+                    href={activeProduct.buyLink} 
+                    className="flex items-center justify-center gap-2 bg-white text-black border border-white hover:bg-transparent hover:text-white px-4 py-3 transition-all duration-300 cursor-pointer pointer-events-auto w-full h-full"
+                    style={{ position: 'relative', zIndex: 100 }}
+                  >
+                    <ShoppingBag size={12} />
+                    <span className="text-[10px] tracking-widest" style={{ fontFamily: FONTS.sans }}>
+                      {activeProduct.buyText || "ご購入はこちらから"}
+                    </span>
+                  </a>
+                </div>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+      </div>
+    </div>
+  </div>
+
+  <AnimatePresence>
+    {selectedImage && (
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 p-4 md:p-10 cursor-zoom-out"
+        onClick={() => setSelectedImage(null)}
+      >
+        <motion.div 
+          layoutId={`image-selected`}
+          className="relative max-w-5xl max-h-full w-full h-auto"
+          onClick={(e) => e.stopPropagation()} 
+        >
+          <img src={selectedImage} alt="Expanded View" className="w-full h-full object-contain rounded-sm" />
+          <button 
+            onClick={() => setSelectedImage(null)}
+            className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full hover:bg-white hover:text-black transition-colors cursor-pointer pointer-events-auto"
+          >
+            <CloseIcon size={20} />
+          </button>
+        </motion.div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+</section>
+
+
+);
+};
+// — Caution Button (Moved Here) —
+const CautionButton = () => {
+return (
+<div className="py-16 bg-[#1A1A1A] flex justify-center px-4 relative z-10 border-t border-white/5">
+<motion.button
+whileHover={{ scale: 1.02, backgroundColor: COLORS.caution, color: ‘#FFFFFF’, borderColor: COLORS.caution }}
+whileTap={{ scale: 0.98 }}
+className=“group relative flex items-center justify-center gap-4 px-10 py-5 w-full max-w-3xl border border-white/30 text-white/80 bg-transparent transition-all duration-300 rounded-sm cursor-pointer z-30 pointer-events-auto”
+>
+<AlertCircle size={20} className="shrink-0" />
+<span
+className=“text-base font-medium tracking-widest text-center”
+style={{ fontFamily: FONTS.serifJp }}
+>
+<Bunsetsu>木製品を</Bunsetsu><Bunsetsu>取り扱う上での</Bunsetsu><Bunsetsu>ご留意点</Bunsetsu>
+</span>
+<ChevronRight size={20} className="shrink-0 transition-transform group-hover:translate-x-1" />
+</motion.button>
+</div>
+);
+};
+// — Awards Section (New) —
+const AwardsSection = () => {
+return (
+<section id="awards" className="py-20 bg-[#F5F5F0]">
+<div className="px-6 md:px-12 w-full max-w-7xl mx-auto">
+<div className="mb-12 text-center md:text-left">
+<h2 className=“text-3xl font-light mb-2 text-[#1A1A1A]” style={{ fontFamily: FONTS.serifEn }}>Awards</h2>
+<p className=“text-[10px] tracking-[0.2em] uppercase opacity-40” style={{ fontFamily: FONTS.sans }}>受賞歴</p>
+</div>
+
+            <div className="flex overflow-x-auto gap-6 pb-8 snap-x scrollbar-hide">
+                {AWARDS.map((award) => (
+                    <motion.div 
+                        key={award.id}
+                        className="flex-none w-[300px] md:w-[400px] snap-center group cursor-pointer"
+                        whileHover={{ y: -5 }}
+                    >
+                        <div className="aspect-video w-full overflow-hidden mb-4 relative">
+                            <img src={award.img} alt={award.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                            <div className="absolute top-4 left-4 bg-white/90 px-3 py-1">
+                                <Award size={16} className="text-[#8B5A2B]" />
+                            </div>
+                        </div>
+                        <h3 className="text-lg font-medium mb-1 text-[#1A1A1A]" style={{ fontFamily: FONTS.serifJp }}>{award.title}</h3>
+                        <p className="text-sm opacity-60 text-[#1A1A1A]" style={{ fontFamily: FONTS.serifJp }}>{award.desc}</p>
+                    </motion.div>
+                ))}
+            </div>
+        </div>
+    </section>
+);
+
+
+};
+// — Partner Section (New) —
+const PartnerSection = () => {
+return (
+<section id="partner" className="py-24 px-6 md:px-20 bg-[#E0DCD1]">
+<div className="max-w-4xl mx-auto">
+<div className="mb-16 text-center">
+<h2 className=“text-3xl font-light mb-4 text-[#1A1A1A]” style={{ fontFamily: FONTS.serifEn }}>Partners</h2>
+<p className=“text-sm md:text-base leading-loose opacity-70 mb-8 max-w-2xl mx-auto” style={{ fontFamily: FONTS.serifJp }}>
+<Bunsetsu>2021年から</Bunsetsu><Bunsetsu>デザイン経営を</Bunsetsu><Bunsetsu>徐々に取り入れ、</Bunsetsu>
+<Bunsetsu>3層パネルを</Bunsetsu><Bunsetsu>リブランディングし、</Bunsetsu>
+<Bunsetsu>LINAWOODに至るまで。</Bunsetsu>
+<Bunsetsu>私たちと共に</Bunsetsu><Bunsetsu>歩んでくれた</Bunsetsu><Bunsetsu>大切な</Bunsetsu><Bunsetsu>パートナーたち。</Bunsetsu>
+</p>
+<div className="w-[1px] h-12 bg-[#1A1A1A]/20 mx-auto"></div>
+</div>
+
+            {/* Branding Team */}
+            <div className="mb-12">
+               <h3 className="text-lg font-light mb-6 text-center opacity-60" style={{ fontFamily: FONTS.serifEn }}>LINAWOOD Branding Team</h3>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                  {BRANDING_TEAM.map((partner, index) => (
+                      <motion.div 
+                          key={`brand-${index}`}
+                          initial={{ opacity: 0, y: 10 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: index * 0.1 }}
+                          className="flex items-baseline justify-between border-b border-[#1A1A1A]/10 pb-2"
+                      >
+                          <div className="flex flex-col">
+                              <span className="text-[10px] font-bold tracking-widest opacity-40 mb-1" style={{ fontFamily: FONTS.sans }}>{partner.role}</span>
+                              <span className="text-base font-medium text-[#1A1A1A]" style={{ fontFamily: FONTS.serifEn }}>{partner.name}</span>
+                          </div>
+                          {partner.id && (
+                              <a 
+                                  href={`https://instagram.com/${partner.id.replace('@', '')}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs opacity-50 hover:opacity-100 transition-opacity flex items-center gap-1"
+                                  style={{ fontFamily: FONTS.sans }}
+                              >
+                                  <Instagram size={10} />
+                                  {partner.id}
+                              </a>
+                          )}
+                      </motion.div>
+                  ))}
+               </div>
+            </div>
+
+            {/* Special Thanks & Advisors */}
+            <div>
+               <h3 className="text-lg font-light mb-6 text-center opacity-60" style={{ fontFamily: FONTS.serifEn }}>Special Thanks & Advisors</h3>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                  {SPECIAL_THANKS.map((partner, index) => (
+                      <motion.div 
+                          key={`special-${index}`}
+                          initial={{ opacity: 0, y: 10 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: index * 0.1 }}
+                          className="flex items-baseline justify-between border-b border-[#1A1A1A]/10 pb-2"
+                      >
+                          <div className="flex flex-col">
+                              <span className="text-[10px] font-bold tracking-widest opacity-40 mb-1" style={{ fontFamily: FONTS.sans }}>{partner.role}</span>
+                              <span className="text-base font-medium text-[#1A1A1A]" style={{ fontFamily: FONTS.serifEn }}>{partner.name}</span>
+                          </div>
+                          {partner.id && (
+                              <a 
+                                  href={`https://instagram.com/${partner.id.replace('@', '')}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs opacity-50 hover:opacity-100 transition-opacity flex items-center gap-1"
+                                  style={{ fontFamily: FONTS.sans }}
+                              >
+                                  <Instagram size={10} />
+                                  {partner.id}
+                              </a>
+                          )}
+                      </motion.div>
+                  ))}
+               </div>
+            </div>
+
+        </div>
+    </section>
+);
+
+
+};
+const HistorySection = () => {
+const ref = useRef(null);
+const isInView = useInView(ref, { once: false, amount: 0.2 });
+return (
+<section id="history" className="py-20 px-6 md:px-20 bg-[#E0DCD1] text-[#1A1A1A] flex justify-center">
+<div className="max-w-3xl w-full">
+<div className="mb-12 text-center">
+<h2 className=“text-2xl font-light mb-1” style={{ fontFamily: FONTS.serifEn }}>Our Story</h2>
+<div className="w-[1px] h-8 bg-[#1A1A1A]/20 mx-auto"></div>
+</div>
+
+    <div ref={ref} className="relative space-y-0">
+      <motion.div 
+        initial={{ height: 0 }}
+        animate={isInView ? { height: '100%' } : { height: 0 }}
+        transition={{ duration: 2, ease: "easeInOut" }}
+        className="absolute left-[3.5rem] md:left-[5rem] top-2 w-[1px] bg-[#1A1A1A]/10"
+      />
+
+      {HISTORY.map((item, index) => (
+        <motion.div 
+          key={index}
+          initial={{ opacity: 0, y: 10 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+          transition={{ delay: index * 0.15, duration: 0.6 }}
+          className="flex items-start group py-3" 
+        >
+          <div className="w-[3.5rem] md:w-[5rem] shrink-0 text-right pr-4 md:pr-6 relative">
+             <span className="text-[10px] md:text-[11px] font-bold tracking-widest opacity-40 font-sans block pt-1">
+              {item.year.replace('年', '')}
+             </span>
+             <span className="absolute right-[-3px] top-[9px] w-[5px] h-[5px] rounded-full bg-[#1A1A1A] opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
+          
+          <div className="flex-1 pl-4 md:pl-6 border-l border-transparent">
+            <p className="text-[11px] md:text-[12px] leading-relaxed font-medium text-[#1A1A1A]/80" style={{ fontFamily: FONTS.serifJp }}>
+              {item.event}
+            </p>
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  </div>
+</section>
+
+
+);
+};
+const CompanySection = () => {
+const info = [
+{ label: “会社名”, value: “緑川木材株式会社” },
+{ label: “代表者”, value: “緑川 新之介” },
+{ label: “所在地”, value: “〒078-1403 北海道上川郡愛別町字南町472番地4” },
+{ label: “事業内容”, value: “木材加工、建材製造、家具販売” },
+];
+return (
+<section id="company" className="py-24 px-6 md:px-20 bg-[#F5F5F0] text-[#1A1A1A]">
+<div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-16 items-start justify-center">
+
+     {/* Left: Heading & Address Actions */}
+     <div className="md:w-1/3 space-y-8">
+       <div>
+         <h2 className="text-3xl font-light mb-2" style={{ fontFamily: FONTS.serifEn }}>Company</h2>
+         <div className="flex items-center gap-1 opacity-50">
+           <MapPin size={14} /> Aibetsu, Hokkaido
+         </div>
+       </div>
+
+       <div className="space-y-4">
+         <a 
+           href="https://maps.app.goo.gl/CWtvKeSF25LfbMxD8?g_st=ic" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           className="flex items-center gap-3 border border-[#1A1A1A]/20 px-6 py-4 hover:bg-[#1A1A1A] hover:text-white transition-all group w-full cursor-pointer relative z-30 pointer-events-auto"
+         >
+           <Map size={16} />
+           <span className="text-xs tracking-widest flex-1" style={{ fontFamily: FONTS.sans }}>GOOGLE MAPS</span>
+           <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+         </a>
+         
+         <a 
+           href="mailto:midorikawamokuzai@gmail.com" 
+           className="flex items-center gap-3 border border-[#1A1A1A]/20 px-6 py-4 hover:bg-[#1A1A1A] hover:text-white transition-all group w-full cursor-pointer relative z-30 pointer-events-auto"
+         >
+           <Mail size={16} />
+           <span className="text-xs tracking-widest flex-1" style={{ fontFamily: FONTS.sans }}>CONTACT US</span>
+           <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+         </a>
+
+         <a 
+           href="https://www.instagram.com/midorikawamokuzai?igsh=MTdqc2E0ajh3bTJvcw%3D%3D&utm_source=qr" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           className="flex items-center gap-3 border border-[#1A1A1A]/20 px-6 py-4 hover:bg-[#1A1A1A] hover:text-white transition-all group w-full cursor-pointer relative z-30 pointer-events-auto"
+         >
+           <Instagram size={16} />
+           <span className="text-xs tracking-widest flex-1" style={{ fontFamily: FONTS.sans }}>INSTAGRAM</span>
+           <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+         </a>
+       </div>
+     </div>
+
+     {/* Right: Detailed Info */}
+     <div className="md:w-2/3 w-full grid grid-cols-1 gap-8">
+        {/* Basic Info */}
+        <div className="space-y-6">
+          {info.map((item, i) => (
+            <div key={i} className="flex flex-col md:flex-row md:items-baseline border-b border-[#1A1A1A]/10 pb-3">
+              <span className="text-[10px] font-bold tracking-widest opacity-40 w-32 mb-1 md:mb-0" style={{ fontFamily: FONTS.sans }}>{item.label}</span>
+              <span className="font-light text-sm md:text-base leading-relaxed" style={{ fontFamily: FONTS.serifJp }}>{item.value}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Contact Details */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-[#1A1A1A]/5">
+           <div className="flex flex-col">
+             <span className="text-[10px] font-bold tracking-widest opacity-40 mb-2" style={{ fontFamily: FONTS.sans }}>PHONE</span>
+             <a href="tel:0165865855" className="flex items-center gap-2 text-lg font-light hover:opacity-60 transition-opacity cursor-pointer relative z-30 pointer-events-auto">
+               <Phone size={16} className="opacity-50" /> 01658-6-5855
+             </a>
+           </div>
+           <div className="flex flex-col">
+             <span className="text-[10px] font-bold tracking-widest opacity-40 mb-2" style={{ fontFamily: FONTS.sans }}>FAX</span>
+             <div className="flex items-center gap-2 text-lg font-light">
+               <Printer size={16} className="opacity-50" /> 01658-6-4388
+             </div>
+           </div>
+        </div>
+     </div>
+
+   </div>
+</section>
+
+
+);
+};
+const Footer = () => {
+return (
+<footer id="contact" className="bg-[#1A1A1A] text-[#E0DCD1] py-12 px-6">
+<div className="max-w-7xl mx-auto flex justify-between items-center">
+<div>
+<h2 className=“text-2xl font-medium mb-1” style={{ fontFamily: FONTS.serifEn }}>Midorikawa Mokuzai</h2>
+<p className=“opacity-40 text-[10px] tracking-widest uppercase” style={{ fontFamily: FONTS.sans }}>Hokkaido, Japan</p>
+</div>
+<div className=“text-[10px] opacity-20” style={{ fontFamily: FONTS.sans }}>© 2026 MIDORIKAWA MOKUZAI</div>
+</div>
+</footer>
+);
+};
+// New Navigation Component
+const FloatingNav = () => {
+const scrollToTop = () => {
+window.scrollTo({ top: 0, behavior: ‘smooth’ });
+};
+
+const scrollToBottom = () => {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+};
+
+return (
+    <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-2 pointer-events-auto mix-blend-difference text-[#E0DCD1]">
+         <motion.button 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 2 }}
+            onClick={scrollToTop}
+            className="w-10 h-10 border border-[#E0DCD1]/50 rounded-full flex items-center justify-center hover:bg-[#E0DCD1] hover:text-[#1A1A1A] transition-colors duration-300"
+        >
+            <ArrowUp size={16} />
+        </motion.button>
+        <motion.button 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 2.1 }}
+            onClick={scrollToBottom}
+            className="w-10 h-10 border border-[#E0DCD1]/50 rounded-full flex items-center justify-center hover:bg-[#E0DCD1] hover:text-[#1A1A1A] transition-colors duration-300"
+        >
+            <ArrowDown size={16} />
+        </motion.button>
+    </div>
+);
+
+
+};
+export default function App() {
+return (
+<div className=“min-h-screen selection:bg-[#1A1A1A] selection:text-white overflow-x-hidden relative” style={{ backgroundColor: COLORS.bg, color: COLORS.text }}>
+<style>{@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Montserrat:wght@300;400;500&family=Shippori+Mincho:wght@400;500&display=swap'); html { scroll-behavior: smooth; } body { margin: 0; padding: 0; } .scrollbar-hide::-webkit-scrollbar { display: none; } .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; } .snap-x { scroll-snap-type: x mandatory; } .snap-center { scroll-snap-align: center; }}</style>
+
+  <Navigation />
+  
+  <main>
+    <HeroSection />
+    <ConceptSection />
+    <ValuesSection />
+    <WoodTypesSection />
+    <ProductsSection />
+    <CautionButton />
+    <AwardsSection />
+    <PartnerSection />
+    <HistorySection />
+    <CompanySection />
+  </main>
+
+  <Footer />
+  <FloatingNav />
+</div>
+
+
+);
+};
