@@ -23,7 +23,8 @@
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useRef, useEffect } = React;
-        const { motion, useScroll, useTransform, useInView, AnimatePresence } = window.Motion;
+        const _Motion = window.Motion || window.FramerMotion || window.motion;
+        const { motion, useScroll, useTransform, useInView, AnimatePresence } = _Motion;
 
         // SVGアイコンコンポーネント（lucide-react不要）
         const Icon = ({ d, size = 16, className = "", strokeWidth = 2, viewBox = "0 0 24 24", extraPaths = [] }) => (
