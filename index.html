@@ -26,7 +26,6 @@
         const _Motion = window.Motion || window.FramerMotion || window.motion;
         const { motion, useScroll, useTransform, useInView, AnimatePresence } = _Motion;
 
-        // SVGアイコンコンポーネント（lucide-react不要）
         const Icon = ({ d, size = 16, className = "", strokeWidth = 2, viewBox = "0 0 24 24", extraPaths = [] }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox={viewBox} fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
                 <path d={d} />
@@ -67,6 +66,8 @@
         };
         const COLORS = { bg: '#E0DCD1', text: '#1A1A1A', accent: '#8C8575', caution: '#9B2C2C', wood: '#8B5A2B' };
 
+        const SHOPIFY_BASE = "https://xqifj1-eq.myshopify.com";
+
         const HERO_IMAGES_SOURCE = [
             "https://rival-salmon-hvqpyv4hon.edgeone.app/_00A0262.jpeg",
             "https://neutral-blush-wvf5zfxduo.edgeone.app/_00A0529.jpeg",
@@ -103,15 +104,15 @@
             { id: 'kaba', name: 'カバ', desc: (<><Bunsetsu>北海道らしい</Bunsetsu><Bunsetsu>景観を彩る、</Bunsetsu><Bunsetsu>道内で最も蓄積が多い</Bunsetsu><Bunsetsu>落葉広葉樹。</Bunsetsu><Bunsetsu>用途は、</Bunsetsu><Bunsetsu>家具材、</Bunsetsu><Bunsetsu>合板材、</Bunsetsu><Bunsetsu>床板、</Bunsetsu><Bunsetsu>爪楊枝など。</Bunsetsu><Bunsetsu>特にマカバは</Bunsetsu><Bunsetsu>銘木として</Bunsetsu><Bunsetsu>高値で取引されている。</Bunsetsu></>), img: 'https://local-blush-trb8yb7omb.edgeone.app/IMG_9623.png' },
         ];
         const PRODUCTS = [
-            { id: 1, title: "LINAWOOD", category: "Signature", desc: "3層構造の積層パネル。繊維を直交させることで強度と寸法安定性を確保。断面のストライプは構造そのものが生む模様。針葉樹・広葉樹対応。ウッドデザイン賞2024 / みらいのたね賞受賞。", src: "https://iinawood.edgeone.app/__lina_KV02.jpeg", link: "https://linawood.jp/", linkText: "公式サイトへ" },
+            { id: 1, title: "LINAWOOD", category: "Signature", desc: "3層構造の積層パネル。繊維を直交させることで強度と寸法安定性を確保。断面のストライプは構造そのものが生む模様。針葉樹・広葉樹対応。ウッドデザイン賞2024 / みらいのたね賞受賞。", src: "https://iinawood.edgeone.app/__lina_KV02.jpeg", link: "https://linawood.jp/", linkText: "公式サイトへ", buyLink: SHOPIFY_BASE + "/products/linawood", buyText: "ご購入はこちらから" },
             { id: 2, title: "外壁材", category: "Exterior", desc: "北海道産カラマツ・トドマツの外壁材。耐候性が高く、経年で銀化する。仕様・数量はお問い合わせください。", src: "https://karagai.edgeone.app/DSCF8099.jpeg" },
             { id: 3, title: "カラマツフローリング", category: "Flooring", desc: "硬度が高く傷がつきにくい。赤みのある木目。土足対応。仕様・数量はお問い合わせください。", src: "https://scornful-turquoise-toijnloplt.edgeone.app/DSCF8083.jpeg" },
             { id: 4, title: "トドマツフローリング", category: "Flooring", desc: "白く明るい色味。柔らかく温かみのある踏み心地。住宅向け。仕様・数量はお問い合わせください。", src: "https://todofloor.edgeone.app/DSCF8085.jpeg" },
             { id: 5, title: "スリット羽目板", category: "Paneling", desc: "等間隔のスリット加工を施した内装用羽目板。光の入り方で陰影が変わる。仕様・数量はお問い合わせください。", src: "https://slithame.edgeone.app/DSCF8143.jpeg" },
             { id: 6, title: "テーパー溝羽目板", category: "Paneling", desc: "テーパー断面の溝加工。光の角度でラインが際立つ。仕様・数量はお問い合わせください。", src: "https://hameita.edgeone.app/DSCF8206.jpeg" },
             { id: 7, title: "巾木", category: "Baseboard", desc: "床と壁の境目を仕上げる。フローリングと素材を揃えることで統一感が出る。仕様・数量はお問い合わせください。", src: "https://habaki.edgeone.app/DSCF8113.jpeg" },
-            { id: 8, title: "しましまつみ木", category: "Toy", desc: "LINAWOODの積層断面をそのまま積み木に。カラマツとトドマツの層がストライプをつくる。TOPAWARDS ASIA 2024受賞。名入れオプションあり。", src: "https://shimashima.edgeone.app/IMG_3787.jpeg", buyLink: "https://midorikawa-mokuzai.myshopify.com", buyText: "購入する" },
-            { id: 9, title: "LINABEAR", category: "Object", desc: "リサイクルショップの木彫り熊をスキャンし、アルゴリズムで再設計。LINAWOODで削り出した木製オブジェ。ウッドデザイン賞2024受賞。", src: "https://linabear.edgeone.app/att.2HbVptv7GjcfO4yy0mheGruKOvYP58FC7_mCTyhA9qY.jpeg", buyLink: "https://midorikawa-mokuzai.myshopify.com", buyText: "購入する" },
+            { id: 8, title: "しましまつみ木", category: "Toy", desc: "LINAWOODの積層断面をそのまま積み木に。カラマツとトドマツの層がストライプをつくる。TOPAWARDS ASIA 2024受賞。名入れオプションあり。", src: "https://shimashima.edgeone.app/IMG_3787.jpeg", buyLink: SHOPIFY_BASE + "/products/shimashima-tsumiki", buyText: "ご購入はこちらから" },
+            { id: 9, title: "LINABEAR", category: "Object", desc: "リサイクルショップの木彫り熊をスキャンし、アルゴリズムで再設計。LINAWOODで削り出した木製オブジェ。ウッドデザイン賞2024受賞。", src: "https://linabear.edgeone.app/att.2HbVptv7GjcfO4yy0mheGruKOvYP58FC7_mCTyhA9qY.jpeg", buyLink: SHOPIFY_BASE + "/products/linabear", buyText: "ご購入はこちらから" },
         ];
         const HISTORY = [
             { year: "昭和30年", event: "初代緑川勝一により北海道常呂郡佐呂間町にて緑川木材を創業。" },
@@ -263,6 +264,7 @@
         const ProductsSection = () => {
             const [activeId, setActiveId] = useState(1);
             const [selectedImage, setSelectedImage] = useState(null);
+            const [showCaution, setShowCaution] = useState(false);
             const activeProduct = PRODUCTS.find(p=>p.id===activeId);
             const handlePrev = () => { const idx=PRODUCTS.findIndex(p=>p.id===activeId); setActiveId(PRODUCTS[(idx-1+PRODUCTS.length)%PRODUCTS.length].id); };
             const handleNext = () => { const idx=PRODUCTS.findIndex(p=>p.id===activeId); setActiveId(PRODUCTS[(idx+1)%PRODUCTS.length].id); };
@@ -302,20 +304,20 @@
                         </div>
                     </div>
                     <div className="py-16 flex justify-center px-4 border-t border-white/5 mt-8">
-                        <motion.button whileHover={{scale:1.02}} whileTap={{scale:0.98}} className="flex items-center justify-center gap-4 px-10 py-5 w-full max-w-3xl bg-white border border-[#9B2C2C] text-[#9B2C2C] rounded-sm cursor-pointer shadow-lg">
+                        <motion.button onClick={()=>setShowCaution(true)} whileHover={{scale:1.02}} whileTap={{scale:0.98}} className="flex items-center justify-center gap-4 px-10 py-5 w-full max-w-3xl bg-white border border-[#9B2C2C] text-[#9B2C2C] rounded-sm cursor-pointer shadow-lg">
                             <AlertCircle size={20} className="shrink-0"/>
                             <span className="text-base font-medium tracking-widest" style={{fontFamily:FONTS.serifJp}}><Bunsetsu>木製品を</Bunsetsu><Bunsetsu>取り扱う上での</Bunsetsu><Bunsetsu>ご留意点</Bunsetsu></span>
                             <ChevronRight size={20} className="shrink-0"/>
                         </motion.button>
                     </div>
                     <AnimatePresence>{selectedImage&&(<motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 p-4 cursor-zoom-out" onClick={()=>setSelectedImage(null)}><div className="relative max-w-5xl max-h-full w-full" onClick={e=>e.stopPropagation()}><img src={selectedImage} alt="" className="w-full h-full object-contain rounded-sm"/><button onClick={()=>setSelectedImage(null)} className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full hover:bg-white hover:text-black transition-colors pointer-events-auto"><X size={20}/></button></div></motion.div>)}</AnimatePresence>
+                    <AnimatePresence>{showCaution&&(<motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="fixed inset-0 z-[200] bg-black/95 overflow-auto cursor-pointer" onClick={()=>setShowCaution(false)}><div className="min-h-full flex items-start justify-center p-4 py-12"><div className="relative max-w-2xl w-full" onClick={e=>e.stopPropagation()}><img src="./caution.png" alt="製品の取り扱いと保証規定" className="w-full h-auto rounded-sm shadow-2xl"/><button onClick={()=>setShowCaution(false)} className="fixed top-4 right-4 bg-black/70 text-white p-3 rounded-full hover:bg-white hover:text-black transition-colors z-[210] shadow-lg"><X size={20}/></button></div></div></motion.div>)}</AnimatePresence>
                 </section>
             );
         };
 
         const AwardsSection = () => {
             const AWARD_ICONS = [
-                // 建築家が選ぶみらいのたね賞 → 葉・芽のイメージ
                 () => (
                     <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-16 h-16 mx-auto">
                         <circle cx="40" cy="40" r="38" stroke="#8C8575" strokeWidth="1"/>
@@ -323,7 +325,6 @@
                         <line x1="40" y1="60" x2="40" y2="68" stroke="#1A1A1A" strokeWidth="1.2"/>
                     </svg>
                 ),
-                // ウッドデザイン賞 → 木の断面・年輪
                 () => (
                     <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-16 h-16 mx-auto">
                         <circle cx="40" cy="40" r="38" stroke="#8C8575" strokeWidth="1"/>
@@ -333,7 +334,6 @@
                         <circle cx="40" cy="40" r="30" stroke="#1A1A1A" strokeWidth="0.6"/>
                     </svg>
                 ),
-                // Topawards Asia → 星・グローバル
                 () => (
                     <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-16 h-16 mx-auto">
                         <circle cx="40" cy="40" r="38" stroke="#8C8575" strokeWidth="1"/>
