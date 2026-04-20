@@ -92,8 +92,8 @@
         ];
         const AWARDS = [
             { id: 1, title: "建築家が選ぶみらいのたね賞2025", product: "LINAWOOD", desc: "受賞", img: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2000", link: "https://www.jma.or.jp/homeshow/mirainotane/award/index.html" },
-            { id: 2, title: "ウッドデザイン賞2024", product: "LINAWOOD", desc: "受賞", img: "https://images.unsplash.com/photo-1617104424032-b9bd6972d0e4?q=80&w=2000", link: "https://linawood.jp/" },
-            { id: 3, title: "Topawards Asia", product: "しましまつみ木", desc: "受賞", img: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=2000", link: "https://www.topawardsasia.com/winner-topawards/lina-blocks" },
+            { id: 2, title: "ウッドデザイン賞2024", product: "LINAWOOD", desc: "受賞", img: "https://images.unsplash.com/photo-1617104424032-b9bd6972d0e4?q=80&w=2000", link: "https://www.wooddesign.jp/db/production/2254/" },
+            { id: 3, title: "Topawards Asia", product: "しましまつみ木", desc: "受賞", img: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=2000", link: "https://disc-parrotfish-lffr.squarespace.com/ja/winner-topawards/lina-blocks" },
         ];
         const HOKKAIDO_WOODS = [
             { id: 'todomatsu', name: 'トドマツ', desc: (<><Bunsetsu>北海道で最も多い</Bunsetsu><Bunsetsu>針葉樹。</Bunsetsu><Bunsetsu>材質は柔らかく</Bunsetsu><Bunsetsu>木目が通っており、</Bunsetsu><Bunsetsu>その白さは</Bunsetsu><Bunsetsu>とても美しい。</Bunsetsu><Bunsetsu>建築材から</Bunsetsu><Bunsetsu>産業用資材まで、</Bunsetsu><Bunsetsu>用途は幅広い。</Bunsetsu></>), img: 'https://increased-violet-z0irqzpo7y.edgeone.app/IMG_9618.png' },
@@ -135,15 +135,15 @@
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
             };
             return (
-                <header className="fixed top-0 left-0 right-0 z-50 flex justify-end items-center p-6 md:p-10 text-[#E0DCD1] mix-blend-difference pointer-events-none">
-                    <button onClick={() => setIsOpen(!isOpen)} className="group flex items-center gap-3 focus:outline-none relative z-50 pointer-events-auto text-[#E0DCD1]">
+                <header className={`fixed top-0 left-0 right-0 z-[100] flex justify-end items-center p-6 md:p-10 pointer-events-none ${isOpen ? 'text-[#E0DCD1]' : 'text-[#E0DCD1] mix-blend-difference'}`}>
+                    <button onClick={() => setIsOpen(!isOpen)} className="group flex items-center gap-3 focus:outline-none relative z-[110] pointer-events-auto text-[#E0DCD1]">
                         <span className="hidden md:block text-[10px] tracking-[0.25em] group-hover:opacity-70 transition-opacity uppercase font-medium" style={{fontFamily:FONTS.sans}}>Menu</span>
                         <div className="relative w-8 h-8 flex items-center justify-center">{isOpen ? <X size={24}/> : <Menu size={24}/>}</div>
                     </button>
-                    <motion.div initial={{opacity:0,clipPath:'circle(0% at 100% 0%)'}} animate={{opacity:isOpen?1:0,clipPath:isOpen?'circle(150% at 100% 0%)':'circle(0% at 100% 0%)'}} transition={{duration:0.7,ease:[0.22,1,0.36,1]}} style={{pointerEvents:isOpen?'auto':'none'}} className="fixed inset-0 bg-[#1A1A1A] text-[#E0DCD1] flex flex-col justify-center items-center z-40">
+                    <motion.div initial={{opacity:0,clipPath:'circle(0% at 100% 0%)'}} animate={{opacity:isOpen?1:0,clipPath:isOpen?'circle(150% at 100% 0%)':'circle(0% at 100% 0%)'}} transition={{duration:0.7,ease:[0.22,1,0.36,1]}} style={{pointerEvents:isOpen?'auto':'none'}} className="fixed inset-0 bg-[#1A1A1A]/[0.98] text-[#E0DCD1] flex flex-col justify-center items-center z-[105]">
                         <nav className="flex flex-col gap-6 text-center">
                             {['Concept','Values','Woods','Products','Awards','Partner','History','Company','Contact'].map((item,i)=>(
-                                <motion.a key={item} href={`#${item.toLowerCase()}`} onClick={(e)=>handleLinkClick(e,item.toLowerCase())} initial={{opacity:0,y:30}} animate={{opacity:isOpen?1:0,y:0}} transition={{delay:0.3+(i*0.1),duration:0.8}} className="text-3xl md:text-5xl font-light tracking-tight hover:italic transition-all duration-300 cursor-pointer opacity-70 hover:opacity-100 relative z-50 pointer-events-auto" style={{fontFamily:FONTS.serifEn}}>{item}</motion.a>
+                                <motion.a key={item} href={`#${item.toLowerCase()}`} onClick={(e)=>handleLinkClick(e,item.toLowerCase())} initial={{opacity:0,y:30}} animate={{opacity:isOpen?1:0,y:0}} transition={{delay:0.3+(i*0.1),duration:0.8}} className="text-3xl md:text-5xl font-light tracking-tight hover:italic transition-all duration-300 cursor-pointer opacity-70 hover:opacity-100 relative z-[110] pointer-events-auto" style={{fontFamily:FONTS.serifEn}}>{item}</motion.a>
                             ))}
                         </nav>
                     </motion.div>
@@ -288,18 +288,16 @@
                                 <div className="aspect-square w-full max-w-2xl mx-auto relative overflow-hidden bg-white/5 mb-3 rounded-sm shadow-2xl">
                                     <button onClick={handlePrev} className="absolute left-2 top-1/2 -translate-y-1/2 z-30 p-2 bg-black/40 hover:bg-black/80 text-white rounded-full transition-all pointer-events-auto"><ChevronLeft size={20}/></button>
                                     <button onClick={handleNext} className="absolute right-2 top-1/2 -translate-y-1/2 z-30 p-2 bg-black/40 hover:bg-black/80 text-white rounded-full transition-all pointer-events-auto"><ChevronRight size={20}/></button>
-                                    <AnimatePresence mode="wait"><motion.img key={activeProduct.id} src={activeProduct.src} alt={activeProduct.title} initial={{opacity:0,scale:1.05}} animate={{opacity:1,scale:1}} exit={{opacity:0}} transition={{duration:0.5}} className="absolute inset-0 w-full h-full object-cover"/></AnimatePresence>
+                                    <img key={activeProduct.id} src={activeProduct.src} alt={activeProduct.title} className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"/>
                                 </div>
-                                <AnimatePresence mode="wait">
-                                    <motion.div key={activeProduct.id} initial={{opacity:0,y:5}} animate={{opacity:1,y:0}} exit={{opacity:0}} transition={{duration:0.3}} className="max-w-2xl mx-auto w-full">
-                                        <div className="flex justify-between items-baseline mb-2"><h3 className="text-lg md:text-xl font-medium" style={{fontFamily:FONTS.serifJp}}>{activeProduct.title}</h3><span className="text-[9px] tracking-widest uppercase opacity-50" style={{fontFamily:FONTS.sans}}>{activeProduct.category}</span></div>
-                                        <p className="text-sm md:text-base leading-relaxed opacity-80 mb-4 min-h-[4em]" style={{fontFamily:FONTS.serifJp}}>{activeProduct.desc}</p>
-                                        <div className="flex flex-col md:flex-row gap-2">
-                                            {activeProduct.link&&(<a href={activeProduct.link} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 border border-white/30 hover:bg-white hover:text-black px-4 py-3 transition-all duration-300"><ExternalLink size={12}/><span className="text-[10px] tracking-widest" style={{fontFamily:FONTS.sans}}>{activeProduct.linkText}</span></a>)}
-                                            {activeProduct.buyLink&&(<a href={activeProduct.buyLink} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 bg-white text-black border border-white hover:bg-transparent hover:text-white px-4 py-3 transition-all duration-300"><ShoppingBag size={12}/><span className="text-[10px] tracking-widest" style={{fontFamily:FONTS.sans}}>{activeProduct.buyText}</span></a>)}
-                                        </div>
-                                    </motion.div>
-                                </AnimatePresence>
+                                <div key={activeProduct.id} className="max-w-2xl mx-auto w-full">
+                                    <div className="flex justify-between items-baseline mb-2"><h3 className="text-lg md:text-xl font-medium" style={{fontFamily:FONTS.serifJp}}>{activeProduct.title}</h3><span className="text-[9px] tracking-widest uppercase opacity-50" style={{fontFamily:FONTS.sans}}>{activeProduct.category}</span></div>
+                                    <p className="text-sm md:text-base leading-relaxed opacity-80 mb-4 min-h-[4em]" style={{fontFamily:FONTS.serifJp}}>{activeProduct.desc}</p>
+                                    <div className="flex flex-col md:flex-row gap-2">
+                                        {activeProduct.link&&(<a href={activeProduct.link} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 border border-white/30 hover:bg-white hover:text-black px-4 py-3 transition-all duration-300"><ExternalLink size={12}/><span className="text-[10px] tracking-widest" style={{fontFamily:FONTS.sans}}>{activeProduct.linkText}</span></a>)}
+                                        {activeProduct.buyLink&&(<a href={activeProduct.buyLink} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 bg-white text-black border border-white hover:bg-transparent hover:text-white px-4 py-3 transition-all duration-300"><ShoppingBag size={12}/><span className="text-[10px] tracking-widest" style={{fontFamily:FONTS.sans}}>{activeProduct.buyText}</span></a>)}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
