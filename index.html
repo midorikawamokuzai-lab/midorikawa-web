@@ -15,483 +15,225 @@
         body { margin: 0; padding: 0; background-color: #E0DCD1; color: #1A1A1A; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        .snap-x { scroll-snap-type: x mandatory; }
-        .snap-center { scroll-snap-align: center; }
     </style>
 </head>
 <body>
     <div id="root"></div>
     <script type="text/babel">
-        const { useState, useRef, useEffect } = React;
+        const { useState, useRef, useEffect, createContext, useContext } = React;
         const _Motion = window.Motion || window.FramerMotion || window.motion;
         const { motion, useScroll, useTransform, useInView, AnimatePresence } = _Motion;
 
-        const Icon = ({ d, size = 16, className = "", strokeWidth = 2, viewBox = "0 0 24 24", extraPaths = [] }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox={viewBox} fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
-                <path d={d} />
-                {extraPaths.map((p, i) => <path key={i} d={p} />)}
-            </svg>
-        );
+        // ===== Language =====
+        const LangContext = createContext('jp');
+        const useLang = () => useContext(LangContext);
+        const useT = () => { const lang = useLang(); return (jp, en) => lang === 'jp' ? jp : en; };
+        const L = (val, lang) => (val && typeof val === 'object' && val.jp !== undefined) ? (lang === 'en' ? val.en : val.jp) : val;
 
-        const ArrowRight = ({size=16,className=""}) => <Icon size={size} className={className} d="M5 12h14M12 5l7 7-7 7" />;
-        const ArrowUp = ({size=16,className=""}) => <Icon size={size} className={className} d="M12 19V5M5 12l7-7 7 7" />;
-        const ArrowDown = ({size=16,className=""}) => <Icon size={size} className={className} d="M12 5v14M5 12l7 7 7-7" />;
-        const Menu = ({size=24,className=""}) => <Icon size={size} className={className} d="M3 12h18M3 6h18M3 18h18" />;
-        const X = ({size=24,className=""}) => <Icon size={size} className={className} d="M18 6L6 18M6 6l12 12" />;
-        const Instagram = ({size=16,className=""}) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
-            </svg>
-        );
-        const ExternalLink = ({size=12,className=""}) => <Icon size={size} className={className} d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" extraPaths={["M15 3h6v6","M10 14L21 3"]} />;
-        const Leaf = ({size=20,className=""}) => <Icon size={size} className={className} d="M17 8C8 10 5.9 16.17 3.82 19c0 0 12-2 14-11" extraPaths={["M3.82 19c2.18-3 5.18-8 14.18-11"]} />;
-        const Zap = ({size=20,className=""}) => <Icon size={size} className={className} d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />;
-        const Hammer = ({size=20,className=""}) => <Icon size={size} className={className} d="M15 12l-8.5 8.5a2.12 2.12 0 01-3-3L12 9" extraPaths={["M17.64 15L22 10.64","M20.35 6.35L17.64 9.06a1.5 1.5 0 01-2.12 0l-1.58-1.58a1.5 1.5 0 010-2.12L16.65 3"]} />;
-        const ChevronRight = ({size=10,className=""}) => <Icon size={size} className={className} d="M9 18l6-6-6-6" />;
-        const ChevronLeft = ({size=20,className=""}) => <Icon size={size} className={className} d="M15 18l-6-6 6-6" />;
-        const MapPin = ({size=14,className=""}) => <Icon size={size} className={className} d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" extraPaths={["M12 7a3 3 0 100 6 3 3 0 000-6z"]} />;
-        const AlertCircle = ({size=20,className=""}) => <Icon size={size} className={className} d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" extraPaths={["M12 8v4","M12 16h.01"]} />;
-        const ShoppingBag = ({size=12,className=""}) => <Icon size={size} className={className} d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" extraPaths={["M3 6h18","M16 10a4 4 0 01-8 0"]} />;
-        const TreeDeciduous = ({size=24,className=""}) => <Icon size={size} className={className} d="M12 22V13" extraPaths={["M17.5 9.5c1.5-1 2.5-2.5 2.5-4a5 5 0 00-10 0c0 1.5 1 3 2.5 4","M6.5 13.5c-1.5 1-2.5 2.5-2.5 4a5 5 0 0010 0c0-1.5-1-3-2.5-4"]} />;
-        const MapIcon = ({size=16,className=""}) => <Icon size={size} className={className} d="M3 6l9-4 9 4v12l-9 4-9-4V6z" extraPaths={["M12 2v20","M3 6l9 4 9-4"]} />;
-        const Mail = ({size=16,className=""}) => <Icon size={size} className={className} d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" extraPaths={["M22 6l-10 7L2 6"]} />;
-        const Phone = ({size=16,className=""}) => <Icon size={size} className={className} d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.63 19.79 19.79 0 01.22 2.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.08 6.08l1.08-1.08a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />;
-        const Printer = ({size=16,className=""}) => <Icon size={size} className={className} d="M6 9V2h12v7" extraPaths={["M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2","M6 14h12v8H6z"]} />;
-        const Award = ({size=16,className=""}) => <Icon size={size} className={className} d="M12 15a7 7 0 100-14 7 7 0 000 14z" extraPaths={["M8.21 13.89L7 23l5-3 5 3-1.21-9.12"]} />;
+        // ===== Icons =====
+        const Icon = ({ d, size=16, className="", strokeWidth=2, viewBox="0 0 24 24", extraPaths=[] }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox={viewBox} fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}><path d={d}/>{extraPaths.map((p,i)=><path key={i} d={p}/>)}</svg>);
+        const ArrowRight=({size=16,className=""})=><Icon size={size} className={className} d="M5 12h14M12 5l7 7-7 7"/>;
+        const ArrowUp=({size=16,className=""})=><Icon size={size} className={className} d="M12 19V5M5 12l7-7 7 7"/>;
+        const ArrowDown=({size=16,className=""})=><Icon size={size} className={className} d="M12 5v14M5 12l7 7 7-7"/>;
+        const MenuIcon=({size=24,className=""})=><Icon size={size} className={className} d="M3 12h18M3 6h18M3 18h18"/>;
+        const X=({size=24,className=""})=><Icon size={size} className={className} d="M18 6L6 18M6 6l12 12"/>;
+        const Instagram=({size=16,className=""})=>(<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>);
+        const ExternalLink=({size=12,className=""})=><Icon size={size} className={className} d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" extraPaths={["M15 3h6v6","M10 14L21 3"]}/>;
+        const Leaf=({size=20,className=""})=><Icon size={size} className={className} d="M17 8C8 10 5.9 16.17 3.82 19c0 0 12-2 14-11" extraPaths={["M3.82 19c2.18-3 5.18-8 14.18-11"]}/>;
+        const Zap=({size=20,className=""})=><Icon size={size} className={className} d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>;
+        const Hammer=({size=20,className=""})=><Icon size={size} className={className} d="M15 12l-8.5 8.5a2.12 2.12 0 01-3-3L12 9" extraPaths={["M17.64 15L22 10.64","M20.35 6.35L17.64 9.06a1.5 1.5 0 01-2.12 0l-1.58-1.58a1.5 1.5 0 010-2.12L16.65 3"]}/>;
+        const ChevronRight=({size=10,className=""})=><Icon size={size} className={className} d="M9 18l6-6-6-6"/>;
+        const ChevronLeft=({size=20,className=""})=><Icon size={size} className={className} d="M15 18l-6-6 6-6"/>;
+        const MapPin=({size=14,className=""})=><Icon size={size} className={className} d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" extraPaths={["M12 7a3 3 0 100 6 3 3 0 000-6z"]}/>;
+        const AlertCircle=({size=20,className=""})=><Icon size={size} className={className} d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" extraPaths={["M12 8v4","M12 16h.01"]}/>;
+        const ShoppingBag=({size=12,className=""})=><Icon size={size} className={className} d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" extraPaths={["M3 6h18","M16 10a4 4 0 01-8 0"]}/>;
+        const TreeDeciduous=({size=24,className=""})=><Icon size={size} className={className} d="M12 22V13" extraPaths={["M17.5 9.5c1.5-1 2.5-2.5 2.5-4a5 5 0 00-10 0c0 1.5 1 3 2.5 4","M6.5 13.5c-1.5 1-2.5 2.5-2.5 4a5 5 0 0010 0c0-1.5-1-3-2.5-4"]}/>;
+        const MapIcon=({size=16,className=""})=><Icon size={size} className={className} d="M3 6l9-4 9 4v12l-9 4-9-4V6z" extraPaths={["M12 2v20","M3 6l9 4 9-4"]}/>;
+        const Mail=({size=16,className=""})=><Icon size={size} className={className} d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" extraPaths={["M22 6l-10 7L2 6"]}/>;
+        const Phone=({size=16,className=""})=><Icon size={size} className={className} d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.63 19.79 19.79 0 01.22 2.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.08 6.08l1.08-1.08a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>;
+        const Printer=({size=16,className=""})=><Icon size={size} className={className} d="M6 9V2h12v7" extraPaths={["M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2","M6 14h12v8H6z"]}/>;
 
-        const FONTS = {
-            serifEn: '"Cormorant Garamond", serif',
-            serifJp: '"Shippori Mincho", "Yu Mincho", "Hiragino Mincho ProN", serif',
-            sans: '"Montserrat", sans-serif'
-        };
-        const COLORS = { bg: '#E0DCD1', text: '#1A1A1A', accent: '#8C8575', caution: '#9B2C2C', wood: '#8B5A2B' };
+        // ===== Constants =====
+        const F={serifEn:'"Cormorant Garamond",serif',serifJp:'"Shippori Mincho","Yu Mincho","Hiragino Mincho ProN",serif',sans:'"Montserrat",sans-serif'};
+        const SHOP="https://xqifj1-eq.myshopify.com";
+        const Bn=({children})=><span className="inline-block mr-[0.05em]">{children}</span>;
+        const HEROES=["https://rival-salmon-hvqpyv4hon.edgeone.app/_00A0262.jpeg","https://neutral-blush-wvf5zfxduo.edgeone.app/_00A0529.jpeg","https://secret-black-twuwzl5tyz.edgeone.app/_00A0643.jpeg","https://combined-olive-eqbeg5rue5.edgeone.app/_00A0680.jpeg","https://satisfactory-silver-8b2r2lsbvs.edgeone.app/_00A0976.jpeg","https://screeching-moccasin-jdnxko0bie.edgeone.app/_00B0532.jpeg"];
 
-        const SHOPIFY_BASE = "https://xqifj1-eq.myshopify.com";
-
-        const HERO_IMAGES_SOURCE = [
-            "https://rival-salmon-hvqpyv4hon.edgeone.app/_00A0262.jpeg",
-            "https://neutral-blush-wvf5zfxduo.edgeone.app/_00A0529.jpeg",
-            "https://secret-black-twuwzl5tyz.edgeone.app/_00A0643.jpeg",
-            "https://combined-olive-eqbeg5rue5.edgeone.app/_00A0680.jpeg",
-            "https://satisfactory-silver-8b2r2lsbvs.edgeone.app/_00A0976.jpeg",
-            "https://screeching-moccasin-jdnxko0bie.edgeone.app/_00B0532.jpeg"
+        // ===== Data with i18n =====
+        const TEAM=[{role:"CD / AD / D",name:"MORITA Kengo",id:"@hi_moritakengo"},{role:"P",name:"HIRATA Masakazu",id:"@hirata.masakazu"},{role:"C",name:"SHIOYA Senta",id:"@shy.snt"},{role:"Producer / LP Design",name:"KITAO Kazuma",id:"@kazuma_kitao"}];
+        const THANKS=[{role:{jp:"顧問",en:"Advisor"},name:"MIDORIKAWA Hirofumi",id:"@midcity_mido"},{role:{jp:"家具製造技術指導",en:"Furniture Craft Advisor"},name:"KUROWARABI Ryota",id:"@tuki_to_fune"},{role:{jp:"顧問",en:"Advisor"},name:"SATO Kimiya",id:"@kimiyasato_life"}];
+        const AWARDS=[{id:1,title:{jp:"建築家が選ぶみらいのたね賞2025",en:"Seeds for the Future Award 2025"},product:"LINAWOOD",link:"https://www.jma.or.jp/homeshow/mirainotane/award/index.html"},{id:2,title:{jp:"ウッドデザイン賞2024",en:"Wood Design Award 2024"},product:"LINAWOOD",link:"https://www.wooddesign.jp/db/production/2254/"},{id:3,title:{jp:"Topawards Asia",en:"Topawards Asia"},product:{jp:"しましまつみ木",en:"LINA BLOCKS"},link:"https://disc-parrotfish-lffr.squarespace.com/ja/winner-topawards/lina-blocks"}];
+        const WOODS=[
+            {id:'todomatsu',name:{jp:'トドマツ',en:'Todomatsu (Fir)'},desc:{jp:'北海道で最も多い針葉樹。材質は柔らかく木目が通っており、その白さはとても美しい。建築材から産業用資材まで、用途は幅広い。',en:'The most abundant conifer in Hokkaido. Soft with straight grain and beautiful white color. Used widely from construction to industrial materials.'},img:'https://increased-violet-z0irqzpo7y.edgeone.app/IMG_9618.png'},
+            {id:'karamatsu',name:{jp:'カラマツ',en:'Karamatsu (Larch)'},desc:{jp:'日本産で唯一の落葉針葉樹。乾燥技術の発達により割れやねじれを克服し、その強度の高さを生かして、建築材にも用途を広げている。',en:"Japan's only deciduous conifer. Advances in drying technology have overcome cracking and warping, expanding its use in construction."},img:'https://forward-magenta-fhzpyq5faa.edgeone.app/IMG_9619.png'},
+            {id:'sugi',name:{jp:'（道南）スギ',en:'Donan Cedar'},desc:{jp:'道南地方で古くから植林されている日本最北限の杉。北海道の厳しい自然環境で育ったスギは良質な材が多い。',en:"Japan's northernmost cedar, long cultivated in southern Hokkaido. The harsh climate produces high-quality timber."},img:'https://crazy-tomato-kdqs3a7n4w.edgeone.app/IMG_9620.png'},
+            {id:'mizunara',name:{jp:'ミズナラ',en:'Mizunara (Oak)'},desc:{jp:'北海道を代表する落葉広葉樹。落ち着いた色合いで、硬くて強度もあるため、家具材や床材に使われ、国内外で評価が高い。',en:"Hokkaido's signature hardwood. Calm tones, hard and strong — highly valued for furniture and flooring worldwide."},img:'https://related-crimson-1jz6grvan3.edgeone.app/IMG_9621.png'},
+            {id:'yachidamo',name:{jp:'ヤチダモ',en:'Yachidamo (Ash)'},desc:{jp:'北海道に多く自生する落葉広葉樹。木目が素直で、強度とねばりがあり、弾性が高い。家具材、内装材、工芸品など用途は多彩。',en:'A deciduous hardwood native to Hokkaido. Straight grain with strength, resilience, and high elasticity. Used for furniture, interiors, and crafts.'},img:'https://beneficial-yellow-2nm3mkbxxj.edgeone.app/IMG_9622.png'},
+            {id:'kaba',name:{jp:'カバ',en:'Kaba (Birch)'},desc:{jp:'北海道らしい景観を彩る、道内で最も蓄積が多い落葉広葉樹。家具材、合板材、床板、爪楊枝など。特にマカバは銘木として高値で取引されている。',en:"Hokkaido's most abundant hardwood. Used for furniture, plywood, flooring. Makaba (true birch) is prized as premium wood."},img:'https://local-blush-trb8yb7omb.edgeone.app/IMG_9623.png'},
+        ];
+        const PRODUCTS=[
+            {id:1,title:"LINAWOOD",category:"Signature",desc:{jp:"3層構造の積層パネル。繊維を直交させることで強度と寸法安定性を確保。断面のストライプは構造そのものが生む模様。針葉樹・広葉樹対応。ウッドデザイン賞2024 / みらいのたね賞受賞。",en:"A three-layer cross-laminated panel. Cross-grain layering ensures strength and stability. The striped cross-section is a pattern born from structure itself. Wood Design Award 2024."},src:"https://iinawood.edgeone.app/__lina_KV02.jpeg",link:"https://linawood.jp/",linkText:{jp:"公式サイトへ",en:"Official Site"},buyLink:SHOP+"/products/linawood",buyText:{jp:"ご購入はこちらから",en:"Purchase"}},
+            {id:2,title:{jp:"外壁材",en:"Exterior Cladding"},category:"Exterior",desc:{jp:"北海道産カラマツ・トドマツの外壁材。耐候性が高く、経年で銀化する。仕様・数量はお問い合わせください。",en:"Hokkaido Larch and Fir cladding. Highly weather-resistant, developing a silver patina over time. Contact us for details."},src:"https://karagai.edgeone.app/DSCF8099.jpeg"},
+            {id:3,title:{jp:"カラマツフローリング",en:"Larch Flooring"},category:"Flooring",desc:{jp:"硬度が高く傷がつきにくい。赤みのある木目。土足対応。仕様・数量はお問い合わせください。",en:"Hard and scratch-resistant with warm reddish grain. Suitable for heavy traffic. Contact us for details."},src:"https://scornful-turquoise-toijnloplt.edgeone.app/DSCF8083.jpeg"},
+            {id:4,title:{jp:"トドマツフローリング",en:"Fir Flooring"},category:"Flooring",desc:{jp:"白く明るい色味。柔らかく温かみのある踏み心地。住宅向け。仕様・数量はお問い合わせください。",en:"Bright white tones with a soft, warm feel underfoot. Ideal for residential use. Contact us for details."},src:"https://todofloor.edgeone.app/DSCF8085.jpeg"},
+            {id:5,title:{jp:"スリット羽目板",en:"Slit Paneling"},category:"Paneling",desc:{jp:"等間隔のスリット加工を施した内装用羽目板。光の入り方で陰影が変わる。",en:"Interior paneling with evenly spaced slits. Shadows shift as light changes."},src:"https://slithame.edgeone.app/DSCF8143.jpeg"},
+            {id:6,title:{jp:"テーパー溝羽目板",en:"Tapered Groove Paneling"},category:"Paneling",desc:{jp:"テーパー断面の溝加工。光の角度でラインが際立つ。",en:"Tapered groove processing. Lines stand out as light angles change."},src:"https://hameita.edgeone.app/DSCF8206.jpeg"},
+            {id:7,title:{jp:"巾木",en:"Baseboard"},category:"Baseboard",desc:{jp:"床と壁の境目を仕上げる。フローリングと素材を揃えることで統一感が出る。",en:"Finishes the floor-wall junction. Matching with flooring creates a unified look."},src:"https://habaki.edgeone.app/DSCF8113.jpeg"},
+            {id:8,title:{jp:"しましまつみ木",en:"LINA BLOCKS"},category:"Toy",desc:{jp:"LINAWOODの積層断面をそのまま積み木に。カラマツとトドマツの層がストライプをつくる。TOPAWARDS ASIA 2024受賞。名入れオプションあり。",en:"Building blocks cut from LINAWOOD cross-sections. Alternating Larch and Fir layers create natural stripes. TOPAWARDS ASIA 2024. Engraving available."},src:"https://shimashima.edgeone.app/IMG_3787.jpeg",buyLink:SHOP+"/products/shimashima-tsumiki",buyText:{jp:"ご購入はこちらから",en:"Purchase"}},
+            {id:9,title:"LINABEAR",category:"Object",desc:{jp:"リサイクルショップの木彫り熊をスキャンし、アルゴリズムで再設計。LINAWOODで削り出した木製オブジェ。ウッドデザイン賞2024受賞。",en:"A secondhand carved bear, 3D-scanned and algorithmically redesigned. Carved from LINAWOOD. Wood Design Award 2024."},src:"https://linabear.edgeone.app/att.2HbVptv7GjcfO4yy0mheGruKOvYP58FC7_mCTyhA9qY.jpeg",buyLink:SHOP+"/products/linabear",buyText:{jp:"ご購入はこちらから",en:"Purchase"}},
+        ];
+        const HISTORY=[
+            {year:{jp:"昭和30",en:"1955"},event:{jp:"初代緑川勝一により北海道常呂郡佐呂間町にて緑川木材を創業。",en:"Founded by Katsuichi Midorikawa in Saroma, Hokkaido."}},
+            {year:{jp:"昭和35",en:"1960"},event:{jp:"緑川木材株式会社を設立。緑川勝一が代表取締役に就任。",en:"Established Midorikawa Mokuzai Co., Ltd."}},
+            {year:{jp:"昭和49",en:"1974"},event:{jp:"集成材の生産を開始。",en:"Started laminated timber production."}},
+            {year:{jp:"昭和52",en:"1977"},event:{jp:"上川郡愛別町に工場を移転。",en:"Relocated factory to Aibetsu, Kamikawa."}},
+            {year:{jp:"昭和56",en:"1981"},event:{jp:"家具部材の生産を開始。",en:"Started furniture component production."}},
+            {year:{jp:"平成05",en:"1993"},event:{jp:"各種木材加工品の生産を開始。",en:"Started various processed wood products."}},
+            {year:{jp:"平成10",en:"1998"},event:{jp:"緑川倍生が代表取締役に就任。",en:"Masuo Midorikawa became President."}},
+            {year:{jp:"平成14",en:"2002"},event:{jp:"3層パネルの生産を開始。",en:"Started three-layer panel production."}},
+            {year:{jp:"平成25",en:"2013"},event:{jp:"代表取締役に緑川榮二が就任。",en:"Eiji Midorikawa became President."}},
+            {year:{jp:"令和07",en:"2025"},event:{jp:"緑川新之介が代表取締役に就任。",en:"Shinnosuke Midorikawa became President."}},
         ];
 
-        const Bunsetsu = ({ children }) => <span className="inline-block mr-[0.05em]">{children}</span>;
+        // ===== Components =====
+        const LangToggle=({lang,setLang})=>(<div className="fixed top-6 left-6 md:top-10 md:left-10 z-[120] pointer-events-auto mix-blend-difference"><button onClick={()=>setLang(lang==='jp'?'en':'jp')} className="text-[#E0DCD1] text-[11px] tracking-[0.2em] font-medium hover:opacity-70 transition-opacity flex items-center gap-1" style={{fontFamily:F.sans}}><span className={lang==='en'?'opacity-100':'opacity-40'}>EN</span><span className="opacity-30">/</span><span className={lang==='jp'?'opacity-100':'opacity-40'}>JP</span></button></div>);
 
-        const BRANDING_TEAM = [
-            { role: "CD / AD / D", name: "MORITA Kengo", id: "@hi_moritakengo" },
-            { role: "P", name: "HIRATA Masakazu", id: "@hirata.masakazu" },
-            { role: "C", name: "SHIOYA Senta", id: "@shy.snt" },
-            { role: "Producer / LP Design", name: "KITAO Kazuma", id: "@kazuma_kitao" },
-        ];
-        const SPECIAL_THANKS = [
-            { role: "顧問", name: "MIDORIKAWA Hirofumi", id: "@midcity_mido" },
-            { role: "家具製造技術指導", name: "KUROWARABI Ryota", id: "@tuki_to_fune" },
-            { role: "顧問", name: "SATO Kimiya", id: "@kimiyasato_life" },
-        ];
-        const AWARDS = [
-            { id: 1, title: "建築家が選ぶみらいのたね賞2025", product: "LINAWOOD", desc: "受賞", img: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2000", link: "https://www.jma.or.jp/homeshow/mirainotane/award/index.html" },
-            { id: 2, title: "ウッドデザイン賞2024", product: "LINAWOOD", desc: "受賞", img: "https://images.unsplash.com/photo-1617104424032-b9bd6972d0e4?q=80&w=2000", link: "https://www.wooddesign.jp/db/production/2254/" },
-            { id: 3, title: "Topawards Asia", product: "しましまつみ木", desc: "受賞", img: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=2000", link: "https://disc-parrotfish-lffr.squarespace.com/ja/winner-topawards/lina-blocks" },
-        ];
-        const HOKKAIDO_WOODS = [
-            { id: 'todomatsu', name: 'トドマツ', desc: (<><Bunsetsu>北海道で最も多い</Bunsetsu><Bunsetsu>針葉樹。</Bunsetsu><Bunsetsu>材質は柔らかく</Bunsetsu><Bunsetsu>木目が通っており、</Bunsetsu><Bunsetsu>その白さは</Bunsetsu><Bunsetsu>とても美しい。</Bunsetsu><Bunsetsu>建築材から</Bunsetsu><Bunsetsu>産業用資材まで、</Bunsetsu><Bunsetsu>用途は幅広い。</Bunsetsu></>), img: 'https://increased-violet-z0irqzpo7y.edgeone.app/IMG_9618.png' },
-            { id: 'karamatsu', name: 'カラマツ', desc: (<><Bunsetsu>日本産で唯一の</Bunsetsu><Bunsetsu>落葉針葉樹。</Bunsetsu><Bunsetsu>乾燥技術の発達により</Bunsetsu><Bunsetsu>割れやねじれを克服し、</Bunsetsu><Bunsetsu>その強度の高さを</Bunsetsu><Bunsetsu>生かして、</Bunsetsu><Bunsetsu>建築材にも</Bunsetsu><Bunsetsu>用途を広げている。</Bunsetsu></>), img: 'https://forward-magenta-fhzpyq5faa.edgeone.app/IMG_9619.png' },
-            { id: 'sugi', name: '（道南）スギ', desc: (<><Bunsetsu>道南地方で</Bunsetsu><Bunsetsu>古くから植林されている</Bunsetsu><Bunsetsu>日本最北限の杉。</Bunsetsu><Bunsetsu>北海道の厳しい</Bunsetsu><Bunsetsu>自然環境で育ったスギは</Bunsetsu><Bunsetsu>良質な材が多い。</Bunsetsu><Bunsetsu>建築材から</Bunsetsu><Bunsetsu>割り箸まで</Bunsetsu><Bunsetsu>用途は幅広い。</Bunsetsu></>), img: 'https://crazy-tomato-kdqs3a7n4w.edgeone.app/IMG_9620.png' },
-            { id: 'mizunara', name: 'ミズナラ', desc: (<><Bunsetsu>北海道を代表する</Bunsetsu><Bunsetsu>落葉広葉樹。</Bunsetsu><Bunsetsu>落ち着いた色合いで、</Bunsetsu><Bunsetsu>硬くて強度もあるため、</Bunsetsu><Bunsetsu>家具材や</Bunsetsu><Bunsetsu>床材に使われるなど、</Bunsetsu><Bunsetsu>日本国内外での</Bunsetsu><Bunsetsu>評価が高い。</Bunsetsu></>), img: 'https://related-crimson-1jz6grvan3.edgeone.app/IMG_9621.png' },
-            { id: 'yachidamo', name: 'ヤチダモ', desc: (<><Bunsetsu>北海道に多く自生する</Bunsetsu><Bunsetsu>落葉広葉樹。</Bunsetsu><Bunsetsu>木目が素直で、</Bunsetsu><Bunsetsu>強度とねばりがあり、</Bunsetsu><Bunsetsu>弾性が高い。</Bunsetsu><Bunsetsu>家具材、</Bunsetsu><Bunsetsu>内装材、</Bunsetsu><Bunsetsu>工芸品など</Bunsetsu><Bunsetsu>用途は多彩。</Bunsetsu></>), img: 'https://beneficial-yellow-2nm3mkbxxj.edgeone.app/IMG_9622.png' },
-            { id: 'kaba', name: 'カバ', desc: (<><Bunsetsu>北海道らしい</Bunsetsu><Bunsetsu>景観を彩る、</Bunsetsu><Bunsetsu>道内で最も蓄積が多い</Bunsetsu><Bunsetsu>落葉広葉樹。</Bunsetsu><Bunsetsu>用途は、</Bunsetsu><Bunsetsu>家具材、</Bunsetsu><Bunsetsu>合板材、</Bunsetsu><Bunsetsu>床板、</Bunsetsu><Bunsetsu>爪楊枝など。</Bunsetsu><Bunsetsu>特にマカバは</Bunsetsu><Bunsetsu>銘木として</Bunsetsu><Bunsetsu>高値で取引されている。</Bunsetsu></>), img: 'https://local-blush-trb8yb7omb.edgeone.app/IMG_9623.png' },
-        ];
-        const PRODUCTS = [
-            { id: 1, title: "LINAWOOD", category: "Signature", desc: "3層構造の積層パネル。繊維を直交させることで強度と寸法安定性を確保。断面のストライプは構造そのものが生む模様。針葉樹・広葉樹対応。ウッドデザイン賞2024 / みらいのたね賞受賞。", src: "https://iinawood.edgeone.app/__lina_KV02.jpeg", link: "https://linawood.jp/", linkText: "公式サイトへ", buyLink: SHOPIFY_BASE + "/products/linawood", buyText: "ご購入はこちらから" },
-            { id: 2, title: "外壁材", category: "Exterior", desc: "北海道産カラマツ・トドマツの外壁材。耐候性が高く、経年で銀化する。仕様・数量はお問い合わせください。", src: "https://karagai.edgeone.app/DSCF8099.jpeg" },
-            { id: 3, title: "カラマツフローリング", category: "Flooring", desc: "硬度が高く傷がつきにくい。赤みのある木目。土足対応。仕様・数量はお問い合わせください。", src: "https://scornful-turquoise-toijnloplt.edgeone.app/DSCF8083.jpeg" },
-            { id: 4, title: "トドマツフローリング", category: "Flooring", desc: "白く明るい色味。柔らかく温かみのある踏み心地。住宅向け。仕様・数量はお問い合わせください。", src: "https://todofloor.edgeone.app/DSCF8085.jpeg" },
-            { id: 5, title: "スリット羽目板", category: "Paneling", desc: "等間隔のスリット加工を施した内装用羽目板。光の入り方で陰影が変わる。仕様・数量はお問い合わせください。", src: "https://slithame.edgeone.app/DSCF8143.jpeg" },
-            { id: 6, title: "テーパー溝羽目板", category: "Paneling", desc: "テーパー断面の溝加工。光の角度でラインが際立つ。仕様・数量はお問い合わせください。", src: "https://hameita.edgeone.app/DSCF8206.jpeg" },
-            { id: 7, title: "巾木", category: "Baseboard", desc: "床と壁の境目を仕上げる。フローリングと素材を揃えることで統一感が出る。仕様・数量はお問い合わせください。", src: "https://habaki.edgeone.app/DSCF8113.jpeg" },
-            { id: 8, title: "しましまつみ木", category: "Toy", desc: "LINAWOODの積層断面をそのまま積み木に。カラマツとトドマツの層がストライプをつくる。TOPAWARDS ASIA 2024受賞。名入れオプションあり。", src: "https://shimashima.edgeone.app/IMG_3787.jpeg", buyLink: SHOPIFY_BASE + "/products/shimashima-tsumiki", buyText: "ご購入はこちらから" },
-            { id: 9, title: "LINABEAR", category: "Object", desc: "リサイクルショップの木彫り熊をスキャンし、アルゴリズムで再設計。LINAWOODで削り出した木製オブジェ。ウッドデザイン賞2024受賞。", src: "https://linabear.edgeone.app/att.2HbVptv7GjcfO4yy0mheGruKOvYP58FC7_mCTyhA9qY.jpeg", buyLink: SHOPIFY_BASE + "/products/linabear", buyText: "ご購入はこちらから" },
-        ];
-        const HISTORY = [
-            { year: "昭和30年", event: "初代緑川勝一により北海道常呂郡佐呂間町にて緑川木材を創業。" },
-            { year: "昭和35年", event: "緑川木材株式会社を設立。緑川勝一が代表取締役に就任。" },
-            { year: "昭和49年", event: "集成材の生産を開始。" },
-            { year: "昭和52年", event: "上川郡愛別町に工場を移転。" },
-            { year: "昭和56年", event: "家具部材の生産を開始。" },
-            { year: "平成05年", event: "各種木材加工品の生産を開始。" },
-            { year: "平成10年", event: "緑川倍生が代表取締役に就任。" },
-            { year: "平成14年", event: "3層パネルの生産を開始。" },
-            { year: "平成25年", event: "代表取締役に緑川榮二が就任。" },
-            { year: "令和07年", event: "緑川新之介が代表取締役に就任。" },
-        ];
-
-        const Navigation = () => {
-            const [isOpen, setIsOpen] = useState(false);
-            const handleLinkClick = (e, id) => {
-                e.preventDefault(); setIsOpen(false);
-                const el = document.getElementById(id);
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-            };
-            return (
-                <header className={`fixed top-0 left-0 right-0 z-[100] flex justify-end items-center p-6 md:p-10 pointer-events-none ${isOpen ? 'text-[#E0DCD1]' : 'text-[#E0DCD1] mix-blend-difference'}`}>
-                    <button onClick={() => setIsOpen(!isOpen)} className="group flex items-center gap-3 focus:outline-none relative z-[110] pointer-events-auto text-[#E0DCD1]">
-                        <span className="hidden md:block text-[10px] tracking-[0.25em] group-hover:opacity-70 transition-opacity uppercase font-medium" style={{fontFamily:FONTS.sans}}>Menu</span>
-                        <div className="relative w-8 h-8 flex items-center justify-center">{isOpen ? <X size={24}/> : <Menu size={24}/>}</div>
-                    </button>
-                    <motion.div initial={{opacity:0,clipPath:'circle(0% at 100% 0%)'}} animate={{opacity:isOpen?1:0,clipPath:isOpen?'circle(150% at 100% 0%)':'circle(0% at 100% 0%)'}} transition={{duration:0.7,ease:[0.22,1,0.36,1]}} style={{pointerEvents:isOpen?'auto':'none'}} className="fixed inset-0 bg-[#1A1A1A]/[0.98] text-[#E0DCD1] flex flex-col justify-center items-center z-[105]">
-                        <nav className="flex flex-col gap-6 text-center">
-                            {['Concept','Values','Woods','Products','Awards','Partner','History','Company','Contact'].map((item,i)=>(
-                                <motion.a key={item} href={`#${item.toLowerCase()}`} onClick={(e)=>handleLinkClick(e,item.toLowerCase())} initial={{opacity:0,y:30}} animate={{opacity:isOpen?1:0,y:0}} transition={{delay:0.3+(i*0.1),duration:0.8}} className="text-3xl md:text-5xl font-light tracking-tight hover:italic transition-all duration-300 cursor-pointer opacity-70 hover:opacity-100 relative z-[110] pointer-events-auto" style={{fontFamily:FONTS.serifEn}}>{item}</motion.a>
-                            ))}
-                        </nav>
-                    </motion.div>
-                </header>
-            );
-        };
-
-        const HeroSection = () => {
-            const [index, setIndex] = useState(0);
-            const {scrollY} = useScroll();
-            const textY = useTransform(scrollY,[0,500],[0,200]);
-            const opacity = useTransform(scrollY,[0,400],[1,0]);
-            useEffect(()=>{
-                const timer = setInterval(()=>setIndex(p=>(p+1)%HERO_IMAGES_SOURCE.length),6000);
-                return ()=>clearInterval(timer);
-            },[]);
-            return (
-                <section className="relative h-screen w-full overflow-hidden bg-[#1A1A1A] text-[#E0DCD1]">
-                    <div className="absolute inset-0 z-0 bg-black">
-                        {HERO_IMAGES_SOURCE.map((img,i)=>(
-                            <motion.img key={i} src={img} alt="" initial={{opacity:0,scale:1.1}} animate={{opacity:i===index?0.8:0,scale:i===index?1:1.1,zIndex:i===index?1:0}} transition={{duration:2.5,ease:"easeInOut"}} className="absolute inset-0 w-full h-full object-cover" style={{pointerEvents:'none'}}/>
-                        ))}
-                    </div>
-                    <motion.div style={{y:textY,opacity}} className="relative z-10 h-full flex flex-col justify-center items-center text-center px-4 pointer-events-none">
-                        <motion.div initial={{opacity:0,y:30,filter:'blur(10px)'}} animate={{opacity:1,y:0,filter:'blur(0px)'}} transition={{duration:2.5,ease:"easeOut",delay:0.5}}>
-                            <p className="text-xs md:text-sm tracking-[0.3em] uppercase mb-8 opacity-90 drop-shadow-md font-light" style={{fontFamily:FONTS.sans}}>Hokkaido Premium Wood</p>
-                            <h1 className="text-5xl md:text-8xl font-medium tracking-tight leading-none mb-8 drop-shadow-xl" style={{fontFamily:FONTS.serifEn}}>Midorikawa<br/>Mokuzai</h1>
-                        </motion.div>
-                    </motion.div>
-                    <motion.div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10" animate={{y:[0,10,0]}} transition={{repeat:Infinity,duration:2}} style={{opacity}}>
-                        <div className="w-[1px] h-20 bg-white/40"/>
-                    </motion.div>
-                </section>
-            );
-        };
-
-        const ConceptSection = () => {
-            const ref = useRef(null);
-            const isInView = useInView(ref,{once:false,amount:0.3});
-            return (
-                <section id="concept" className="min-h-[80vh] flex items-center justify-center py-32 px-6 md:px-20 relative z-10">
-                    <div className="max-w-3xl w-full text-center">
-                        <div className="mb-16 md:mb-24">
-                            <h2 className="text-3xl md:text-4xl font-light mb-2 text-[#1A1A1A]" style={{fontFamily:FONTS.serifEn}}>Concept</h2>
-                            <p className="text-[10px] tracking-[0.2em] uppercase opacity-40" style={{fontFamily:FONTS.sans}}>理念</p>
-                        </div>
-                        <div ref={ref} className="space-y-12">
-                            <motion.h2 className="text-2xl md:text-3xl lg:text-4xl leading-relaxed text-[#1A1A1A]" style={{fontFamily:FONTS.serifJp}} initial={{opacity:0,filter:'blur(5px)'}} animate={isInView?{opacity:1,filter:'blur(0px)'}:{opacity:0,filter:'blur(5px)'}} transition={{duration:1.2}}>
-                                <Bunsetsu>森の命を、</Bunsetsu><Bunsetsu>人の暮らしへ</Bunsetsu><Bunsetsu>つなぐ。</Bunsetsu>
-                            </motion.h2>
-                            <motion.div initial={{opacity:0,y:20}} animate={isInView?{opacity:1,y:0}:{opacity:0,y:20}} transition={{duration:1.2,delay:0.3}} className="text-base md:text-lg leading-loose text-[#1A1A1A]/70 font-light" style={{fontFamily:FONTS.serifJp}}>
-                                <p><Bunsetsu>余すことなく</Bunsetsu><Bunsetsu>価値に変える</Bunsetsu><Bunsetsu>プロダクトを</Bunsetsu><br/><Bunsetsu>枯れることなく</Bunsetsu><Bunsetsu>生み出す。</Bunsetsu></p>
-                            </motion.div>
-                        </div>
-                    </div>
-                </section>
-            );
-        };
-
-        const ValuesBlock = ({title,num,desc,icon:IconComp,delay}) => {
-            const ref = useRef(null);
-            const isInView = useInView(ref,{once:false,amount:0.4});
-            return (
-                <motion.div ref={ref} initial={{opacity:0,filter:'blur(5px)',y:20}} animate={isInView?{opacity:1,filter:'blur(0px)',y:0}:{opacity:0,filter:'blur(5px)',y:20}} transition={{duration:1.2,delay}} className="py-16 border-t border-[#1A1A1A]/10 last:border-b group flex flex-col items-center text-center">
-                    <div className="flex flex-col items-center gap-6 max-w-3xl">
-                        <div className="flex items-center gap-3">
-                            <span className="text-xs tracking-widest opacity-30 group-hover:opacity-100 transition-opacity" style={{fontFamily:FONTS.sans}}>0{num}</span>
-                            <IconComp size={20} className="opacity-40 group-hover:opacity-100 transition-opacity"/>
-                        </div>
-                        <h3 className="text-lg md:text-2xl font-medium leading-normal text-[#1A1A1A]" style={{fontFamily:FONTS.serifJp}}>{title}</h3>
-                        <p className="text-sm md:text-base leading-loose opacity-60 group-hover:opacity-80 transition-opacity" style={{fontFamily:FONTS.serifJp}}>{desc}</p>
-                    </div>
+        const Navigation=()=>{const[isOpen,setIsOpen]=useState(false);const hc=(e,id)=>{e.preventDefault();setIsOpen(false);const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth'})};return(
+            <header className={`fixed top-0 left-0 right-0 z-[100] flex justify-end items-center p-6 md:p-10 pointer-events-none ${isOpen?'text-[#E0DCD1]':'text-[#E0DCD1] mix-blend-difference'}`}>
+                <button onClick={()=>setIsOpen(!isOpen)} className="group flex items-center gap-3 focus:outline-none relative z-[110] pointer-events-auto text-[#E0DCD1]"><span className="hidden md:block text-[10px] tracking-[0.25em] group-hover:opacity-70 transition-opacity uppercase font-medium" style={{fontFamily:F.sans}}>Menu</span><div className="relative w-8 h-8 flex items-center justify-center">{isOpen?<X size={24}/>:<MenuIcon size={24}/>}</div></button>
+                <motion.div initial={{opacity:0,clipPath:'circle(0% at 100% 0%)'}} animate={{opacity:isOpen?1:0,clipPath:isOpen?'circle(150% at 100% 0%)':'circle(0% at 100% 0%)'}} transition={{duration:0.7,ease:[0.22,1,0.36,1]}} style={{pointerEvents:isOpen?'auto':'none'}} className="fixed inset-0 bg-[#1A1A1A]/[0.98] text-[#E0DCD1] flex flex-col justify-center items-center z-[105]">
+                    <nav className="flex flex-col gap-6 text-center">{['Concept','Values','Woods','Products','Awards','Partner','History','Company','Contact'].map((item,i)=>(<motion.a key={item} href={`#${item.toLowerCase()}`} onClick={e=>hc(e,item.toLowerCase())} initial={{opacity:0,y:30}} animate={{opacity:isOpen?1:0,y:0}} transition={{delay:0.3+i*0.1,duration:0.8}} className="text-3xl md:text-5xl font-light tracking-tight hover:italic transition-all duration-300 cursor-pointer opacity-70 hover:opacity-100 relative z-[110] pointer-events-auto" style={{fontFamily:F.serifEn}}>{item}</motion.a>))}</nav>
                 </motion.div>
-            );
-        };
+            </header>
+        )};
 
-        const ValuesSection = () => (
-            <section id="values" className="py-20 px-6 md:px-20 relative z-10">
-                <div className="max-w-5xl mx-auto">
-                    <div className="mb-16 md:mb-24 text-center"><h2 className="text-3xl md:text-4xl font-light mb-2 text-[#1A1A1A]" style={{fontFamily:FONTS.serifEn}}>Values</h2><p className="text-[10px] tracking-[0.2em] uppercase opacity-40" style={{fontFamily:FONTS.sans}}>行動指針</p></div>
-                    <div className="flex flex-col">
-                        <ValuesBlock title={<><Bunsetsu>隙間（ニッチ）を</Bunsetsu><Bunsetsu>王道に変える</Bunsetsu></>} num="1" desc={<><Bunsetsu>ライン化できない</Bunsetsu><Bunsetsu>手間にこそ</Bunsetsu><Bunsetsu>勝機がある。</Bunsetsu><Bunsetsu>他社が</Bunsetsu><Bunsetsu>やらないことを</Bunsetsu><Bunsetsu>圧倒的品質で</Bunsetsu><Bunsetsu>やる。</Bunsetsu></>} icon={Leaf} delay={0}/>
-                        <ValuesBlock title={<><Bunsetsu>無理難題を</Bunsetsu><Bunsetsu>面白がる</Bunsetsu></>} num="2" desc={<><Bunsetsu>端材や</Bunsetsu><Bunsetsu>規格外の木も</Bunsetsu><Bunsetsu>どう活かすかを</Bunsetsu><Bunsetsu>楽しむ。</Bunsetsu><Bunsetsu>「できない」の前に</Bunsetsu><Bunsetsu>アイデアを</Bunsetsu><Bunsetsu>出す。</Bunsetsu></>} icon={Zap} delay={0.1}/>
-                        <ValuesBlock title={<><Bunsetsu>走りながら考え</Bunsetsu><Bunsetsu>形にしてから</Bunsetsu><Bunsetsu>直す</Bunsetsu></>} num="3" desc={<><Bunsetsu>100回の議論より</Bunsetsu><Bunsetsu>1つの試作。</Bunsetsu><Bunsetsu>発散と収束を</Bunsetsu><Bunsetsu>高速で回し</Bunsetsu><Bunsetsu>正解へ近づく。</Bunsetsu></>} icon={Hammer} delay={0.2}/>
-                    </div>
-                </div>
+        const HeroSection=()=>{const[idx,setIdx]=useState(0);const{scrollY}=useScroll();const tY=useTransform(scrollY,[0,500],[0,200]);const op=useTransform(scrollY,[0,400],[1,0]);useEffect(()=>{const t=setInterval(()=>setIdx(p=>(p+1)%HEROES.length),6000);return()=>clearInterval(t)},[]);return(
+            <section className="relative h-screen w-full overflow-hidden bg-[#1A1A1A] text-[#E0DCD1]">
+                <div className="absolute inset-0 z-0 bg-black">{HEROES.map((img,i)=>(<motion.img key={i} src={img} alt="" initial={{opacity:0,scale:1.1}} animate={{opacity:i===idx?0.8:0,scale:i===idx?1:1.1,zIndex:i===idx?1:0}} transition={{duration:2.5,ease:"easeInOut"}} className="absolute inset-0 w-full h-full object-cover" style={{pointerEvents:'none'}}/>))}</div>
+                <motion.div style={{y:tY,opacity:op}} className="relative z-10 h-full flex flex-col justify-center items-center text-center px-4 pointer-events-none"><motion.div initial={{opacity:0,y:30,filter:'blur(10px)'}} animate={{opacity:1,y:0,filter:'blur(0px)'}} transition={{duration:2.5,ease:"easeOut",delay:0.5}}><p className="text-xs md:text-sm tracking-[0.3em] uppercase mb-8 opacity-90 drop-shadow-md font-light" style={{fontFamily:F.sans}}>Hokkaido Premium Wood</p><h1 className="text-5xl md:text-8xl font-medium tracking-tight leading-none mb-8 drop-shadow-xl" style={{fontFamily:F.serifEn}}>Midorikawa<br/>Mokuzai</h1></motion.div></motion.div>
+                <motion.div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10" animate={{y:[0,10,0]}} transition={{repeat:Infinity,duration:2}} style={{opacity:op}}><div className="w-[1px] h-20 bg-white/40"/></motion.div>
             </section>
-        );
+        )};
 
-        const WoodTypesSection = () => (
-            <section id="woods" className="py-24 px-6 md:px-20" style={{backgroundColor:COLORS.bg}}>
-                <div className="max-w-5xl mx-auto">
-                    <div className="mb-16 text-center md:text-left">
-                        <div className="mb-6"><img src="https://hhwwww.edgeone.app/HW_logo_17.png" alt="HOKKAIDO WOOD" className="w-48 md:w-64 mx-auto md:mx-0 object-contain"/></div>
-                        <p className="text-[10px] tracking-[0.2em] uppercase opacity-40 mb-6" style={{fontFamily:FONTS.sans}}>緑川木材が扱う北海道の木</p>
-                        <p className="text-sm md:text-base leading-loose opacity-60 max-w-2xl" style={{fontFamily:FONTS.serifJp}}><Bunsetsu>私たち</Bunsetsu><Bunsetsu>緑川木材は、</Bunsetsu><Bunsetsu>HOKKAIDO WOOD の中でも、</Bunsetsu><Bunsetsu>特に以下の樹種を</Bunsetsu><Bunsetsu>主力として</Bunsetsu><Bunsetsu>加工・製造しています。</Bunsetsu></p>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 mb-8">
-                        {HOKKAIDO_WOODS.map(wood=>(
-                            <motion.div key={wood.id} className="group relative aspect-square bg-transparent cursor-pointer overflow-hidden rounded-sm" whileTap={{scale:0.98}}>
-                                <div className="absolute inset-0"><img src={wood.img} alt={wood.name} loading="lazy" className="w-full h-full object-contain p-8 opacity-100 mix-blend-multiply group-hover:scale-105 transition-transform duration-700"/></div>
-                                <div className="absolute bottom-4 left-4 z-20"><h3 className="text-base md:text-lg font-medium text-[#1A1A1A]" style={{fontFamily:FONTS.serifJp}}>{wood.name}</h3></div>
-                                <div className="absolute inset-0 bg-[#1A1A1A]/95 p-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-30 rounded-sm"><p className="text-xs md:text-sm leading-relaxed text-white font-light" style={{fontFamily:FONTS.serifJp}}>{wood.desc}</p></div>
-                            </motion.div>
-                        ))}
-                    </div>
-                    <div className="flex justify-center">
-                        <div className="bg-white px-6 py-6 md:px-8 border border-[#E0DCD1] text-center max-w-lg w-full">
-                            <TreeDeciduous size={24} className="mx-auto mb-3 text-[#8C8575]"/>
-                            <p className="text-sm md:text-base font-medium mb-3" style={{fontFamily:FONTS.serifJp}}><Bunsetsu>緑川木材は</Bunsetsu><Bunsetsu>HOKKAIDO WOOD の</Bunsetsu><Bunsetsu>メンバーです。</Bunsetsu></p>
-                            <div className="flex justify-center"><a href="https://hokkaidowood.com/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 border-b border-[#1A1A1A] pb-1 hover:opacity-60 transition-opacity"><span className="text-[10px] tracking-widest" style={{fontFamily:FONTS.sans}}>HOKKAIDO WOOD とは？</span><ArrowRight size={10}/></a></div>
+        const ConceptSection=()=>{const ref=useRef(null);const iv=useInView(ref,{once:false,amount:0.3});const t=useT();const lang=useLang();const ff=lang==='en'?F.serifEn:F.serifJp;return(
+            <section id="concept" className="min-h-[80vh] flex items-center justify-center py-32 px-6 md:px-20 relative z-10"><div className="max-w-3xl w-full text-center">
+                <div className="mb-16 md:mb-24"><h2 className="text-3xl md:text-4xl font-light mb-2" style={{fontFamily:F.serifEn}}>Concept</h2><p className="text-[10px] tracking-[0.2em] uppercase opacity-40" style={{fontFamily:F.sans}}>{t('理念','Philosophy')}</p></div>
+                <div ref={ref} className="space-y-12">
+                    <motion.h2 className="text-2xl md:text-3xl lg:text-4xl leading-relaxed" style={{fontFamily:ff}} initial={{opacity:0,filter:'blur(5px)'}} animate={iv?{opacity:1,filter:'blur(0px)'}:{opacity:0,filter:'blur(5px)'}} transition={{duration:1.2}}>{t(<><Bn>森の命を、</Bn><Bn>人の暮らしへ</Bn><Bn>つなぐ。</Bn></>,'Connecting the life of the forest to the lives of people.')}</motion.h2>
+                    <motion.div initial={{opacity:0,y:20}} animate={iv?{opacity:1,y:0}:{opacity:0,y:20}} transition={{duration:1.2,delay:0.3}} className="text-base md:text-lg leading-loose opacity-70 font-light" style={{fontFamily:ff}}><p>{t(<><Bn>余すことなく</Bn><Bn>価値に変える</Bn><Bn>プロダクトを</Bn><br/><Bn>枯れることなく</Bn><Bn>生み出す。</Bn></>,'Creating products that transform every part of the tree into value — endlessly.')}</p></motion.div>
+                </div>
+            </div></section>
+        )};
+
+        const VB=({tjp,ten,num,djp,den,icon:IC,delay})=>{const ref=useRef(null);const iv=useInView(ref,{once:false,amount:0.4});const t=useT();const lang=useLang();const ff=lang==='en'?F.serifEn:F.serifJp;return(
+            <motion.div ref={ref} initial={{opacity:0,filter:'blur(5px)',y:20}} animate={iv?{opacity:1,filter:'blur(0px)',y:0}:{opacity:0,filter:'blur(5px)',y:20}} transition={{duration:1.2,delay}} className="py-16 border-t border-[#1A1A1A]/10 last:border-b group flex flex-col items-center text-center"><div className="flex flex-col items-center gap-6 max-w-3xl">
+                <div className="flex items-center gap-3"><span className="text-xs tracking-widest opacity-30" style={{fontFamily:F.sans}}>0{num}</span><IC size={20} className="opacity-40"/></div>
+                <h3 className="text-lg md:text-2xl font-medium leading-normal" style={{fontFamily:ff}}>{t(tjp,ten)}</h3>
+                <p className="text-sm md:text-base leading-loose opacity-60" style={{fontFamily:ff}}>{t(djp,den)}</p>
+            </div></motion.div>
+        )};
+
+        const ValuesSection=()=>{const t=useT();return(
+            <section id="values" className="py-20 px-6 md:px-20 relative z-10"><div className="max-w-5xl mx-auto">
+                <div className="mb-16 md:mb-24 text-center"><h2 className="text-3xl md:text-4xl font-light mb-2" style={{fontFamily:F.serifEn}}>Values</h2><p className="text-[10px] tracking-[0.2em] uppercase opacity-40" style={{fontFamily:F.sans}}>{t('行動指針','Guiding Principles')}</p></div>
+                <div className="flex flex-col">
+                    <VB tjp={<><Bn>隙間（ニッチ）を</Bn><Bn>王道に変える</Bn></>} ten="Turning niches into standards" num="1" djp={<><Bn>ライン化できない</Bn><Bn>手間にこそ</Bn><Bn>勝機がある。</Bn><Bn>他社が</Bn><Bn>やらないことを</Bn><Bn>圧倒的品質で</Bn><Bn>やる。</Bn></>} den="The opportunity lies in craftsmanship that can't be mass-produced. We do what others won't — with uncompromising quality." icon={Leaf} delay={0}/>
+                    <VB tjp={<><Bn>無理難題を</Bn><Bn>面白がる</Bn></>} ten="Finding joy in impossible challenges" num="2" djp={<><Bn>端材や</Bn><Bn>規格外の木も</Bn><Bn>どう活かすかを</Bn><Bn>楽しむ。</Bn><Bn>「できない」の前に</Bn><Bn>アイデアを</Bn><Bn>出す。</Bn></>} den="We enjoy finding uses for offcuts and non-standard wood. Ideas come before 'it can't be done.'" icon={Zap} delay={0.1}/>
+                    <VB tjp={<><Bn>走りながら考え</Bn><Bn>形にしてから</Bn><Bn>直す</Bn></>} ten="Run, build, then refine" num="3" djp={<><Bn>100回の議論より</Bn><Bn>1つの試作。</Bn><Bn>発散と収束を</Bn><Bn>高速で回し</Bn><Bn>正解へ近づく。</Bn></>} den="One prototype beats a hundred meetings. Rapid cycles of divergence and convergence lead to the right answer." icon={Hammer} delay={0.2}/>
+                </div>
+            </div></section>
+        )};
+
+        const WoodTypesSection=()=>{const t=useT();const lang=useLang();const ff=lang==='en'?F.serifEn:F.serifJp;return(
+            <section id="woods" className="py-24 px-6 md:px-20" style={{backgroundColor:'#E0DCD1'}}><div className="max-w-5xl mx-auto">
+                <div className="mb-16 text-center md:text-left">
+                    <div className="mb-6"><img src="https://hhwwww.edgeone.app/HW_logo_17.png" alt="HOKKAIDO WOOD" className="w-48 md:w-64 mx-auto md:mx-0 object-contain"/></div>
+                    <p className="text-[10px] tracking-[0.2em] uppercase opacity-40 mb-6" style={{fontFamily:F.sans}}>{t('緑川木材が扱う北海道の木','Hokkaido woods we work with')}</p>
+                    <p className="text-sm md:text-base leading-loose opacity-60 max-w-2xl" style={{fontFamily:ff}}>{t('私たち緑川木材は、HOKKAIDO WOOD の中でも、特に以下の樹種を主力として加工・製造しています。','At Midorikawa Mokuzai, we specialize in the following species from the HOKKAIDO WOOD program.')}</p>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 mb-8">{WOODS.map(w=>(<motion.div key={w.id} className="group relative aspect-square bg-transparent cursor-pointer overflow-hidden rounded-sm" whileTap={{scale:0.98}}><div className="absolute inset-0"><img src={w.img} alt={L(w.name,lang)} loading="lazy" className="w-full h-full object-contain p-8 mix-blend-multiply group-hover:scale-105 transition-transform duration-700"/></div><div className="absolute bottom-4 left-4 z-20"><h3 className="text-base md:text-lg font-medium" style={{fontFamily:ff}}>{L(w.name,lang)}</h3></div><div className="absolute inset-0 bg-[#1A1A1A]/95 p-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-30 rounded-sm"><p className="text-xs md:text-sm leading-relaxed text-white font-light" style={{fontFamily:ff}}>{L(w.desc,lang)}</p></div></motion.div>))}</div>
+                <div className="flex justify-center"><div className="bg-white px-6 py-6 md:px-8 border border-[#E0DCD1] text-center max-w-lg w-full"><TreeDeciduous size={24} className="mx-auto mb-3 text-[#8C8575]"/><p className="text-sm md:text-base font-medium mb-3" style={{fontFamily:ff}}>{t('緑川木材は HOKKAIDO WOOD のメンバーです。','Midorikawa Mokuzai is a member of HOKKAIDO WOOD.')}</p><div className="flex justify-center"><a href="https://hokkaidowood.com/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 border-b border-[#1A1A1A] pb-1 hover:opacity-60 transition-opacity"><span className="text-[10px] tracking-widest" style={{fontFamily:F.sans}}>{t('HOKKAIDO WOOD とは？','What is HOKKAIDO WOOD?')}</span><ArrowRight size={10}/></a></div></div></div>
+            </div></section>
+        )};
+
+        const ProductsSection=()=>{const[activeId,setActiveId]=useState(1);const[showCaution,setShowCaution]=useState(false);const lang=useLang();const t=useT();const ff=lang==='en'?F.serifEn:F.serifJp;const ap=PRODUCTS.find(p=>p.id===activeId);const prev=()=>{const i=PRODUCTS.findIndex(p=>p.id===activeId);setActiveId(PRODUCTS[(i-1+PRODUCTS.length)%PRODUCTS.length].id)};const next=()=>{const i=PRODUCTS.findIndex(p=>p.id===activeId);setActiveId(PRODUCTS[(i+1)%PRODUCTS.length].id)};return(
+            <section id="products" className="py-12 bg-[#1A1A1A] text-[#E0DCD1] overflow-hidden min-h-screen flex flex-col justify-center relative">
+                <div className="px-6 md:px-12 w-full max-w-7xl mx-auto relative z-20">
+                    <div className="flex justify-between items-baseline mb-4 border-b border-white/10 pb-2"><h2 className="text-3xl font-light" style={{fontFamily:F.serifEn}}>Products</h2><p className="text-[10px] tracking-[0.2em] uppercase opacity-40" style={{fontFamily:F.sans}}>{t('製品紹介','Product Lineup')}</p></div>
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        <div className="lg:col-span-3 relative z-30"><p className="text-[10px] opacity-40 mb-2 tracking-widest flex items-center gap-2">SELECT PRODUCT <ChevronRight size={10}/></p>
+                            <div className="flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-4 lg:pb-0 scrollbar-hide">{PRODUCTS.map(item=>(<motion.div key={item.id} onClick={()=>setActiveId(item.id)} className={`flex-none cursor-pointer transition-all duration-300 flex items-center gap-2 p-2 rounded border border-transparent ${item.id===activeId?'bg-white/10 opacity-100 border-white/20':'opacity-40 hover:opacity-70'}`}><div className="w-10 h-10 overflow-hidden bg-white/10 shrink-0 rounded-sm"><img src={item.src} alt={L(item.title,lang)} className="w-full h-full object-cover"/></div><p className="text-[10px] tracking-wider font-light truncate hidden lg:block" style={{fontFamily:ff}}>{L(item.title,lang)}</p></motion.div>))}</div>
                         </div>
-                    </div>
-                </div>
-            </section>
-        );
-
-        const ProductsSection = () => {
-            const [activeId, setActiveId] = useState(1);
-            const [selectedImage, setSelectedImage] = useState(null);
-            const [showCaution, setShowCaution] = useState(false);
-            const activeProduct = PRODUCTS.find(p=>p.id===activeId);
-            const handlePrev = () => { const idx=PRODUCTS.findIndex(p=>p.id===activeId); setActiveId(PRODUCTS[(idx-1+PRODUCTS.length)%PRODUCTS.length].id); };
-            const handleNext = () => { const idx=PRODUCTS.findIndex(p=>p.id===activeId); setActiveId(PRODUCTS[(idx+1)%PRODUCTS.length].id); };
-            return (
-                <section id="products" className="py-12 bg-[#1A1A1A] text-[#E0DCD1] overflow-hidden min-h-screen flex flex-col justify-center relative">
-                    <div className="px-6 md:px-12 w-full max-w-7xl mx-auto relative z-20">
-                        <div className="flex justify-between items-baseline mb-4 border-b border-white/10 pb-2"><h2 className="text-3xl font-light" style={{fontFamily:FONTS.serifEn}}>Products</h2><p className="text-[10px] tracking-[0.2em] uppercase opacity-40" style={{fontFamily:FONTS.sans}}>製品紹介</p></div>
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                            <div className="lg:col-span-3 relative z-30">
-                                <p className="text-[10px] opacity-40 mb-2 tracking-widest flex items-center gap-2">SELECT PRODUCT <ChevronRight size={10}/></p>
-                                <div className="flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-4 lg:pb-0 scrollbar-hide">
-                                    {PRODUCTS.map(item=>(
-                                        <motion.div key={item.id} onClick={()=>setActiveId(item.id)} className={`flex-none cursor-pointer transition-all duration-300 flex items-center gap-2 p-2 rounded border border-transparent ${item.id===activeId?'bg-white/10 opacity-100 border-white/20':'opacity-40 hover:opacity-70'}`}>
-                                            <div className="w-10 h-10 overflow-hidden bg-white/10 shrink-0 rounded-sm"><img src={item.src} alt={item.title} className="w-full h-full object-cover"/></div>
-                                            <p className="text-[10px] tracking-wider font-light truncate hidden lg:block" style={{fontFamily:FONTS.serifJp}}>{item.title}</p>
-                                        </motion.div>
-                                    ))}
-                                </div>
+                        <div className="lg:col-span-9 flex flex-col justify-start relative z-20">
+                            <div className="aspect-square w-full max-w-2xl mx-auto relative overflow-hidden bg-white/5 mb-3 rounded-sm shadow-2xl">
+                                <button onClick={prev} className="absolute left-2 top-1/2 -translate-y-1/2 z-30 p-2 bg-black/40 hover:bg-black/80 text-white rounded-full transition-all"><ChevronLeft size={20}/></button>
+                                <button onClick={next} className="absolute right-2 top-1/2 -translate-y-1/2 z-30 p-2 bg-black/40 hover:bg-black/80 text-white rounded-full transition-all"><ChevronRight size={20}/></button>
+                                <img key={ap.id} src={ap.src} alt={L(ap.title,lang)} className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"/>
                             </div>
-                            <div className="lg:col-span-9 flex flex-col justify-start relative z-20">
-                                <div className="aspect-square w-full max-w-2xl mx-auto relative overflow-hidden bg-white/5 mb-3 rounded-sm shadow-2xl">
-                                    <button onClick={handlePrev} className="absolute left-2 top-1/2 -translate-y-1/2 z-30 p-2 bg-black/40 hover:bg-black/80 text-white rounded-full transition-all pointer-events-auto"><ChevronLeft size={20}/></button>
-                                    <button onClick={handleNext} className="absolute right-2 top-1/2 -translate-y-1/2 z-30 p-2 bg-black/40 hover:bg-black/80 text-white rounded-full transition-all pointer-events-auto"><ChevronRight size={20}/></button>
-                                    <img key={activeProduct.id} src={activeProduct.src} alt={activeProduct.title} className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"/>
-                                </div>
-                                <div key={activeProduct.id} className="max-w-2xl mx-auto w-full">
-                                    <div className="flex justify-between items-baseline mb-2"><h3 className="text-lg md:text-xl font-medium" style={{fontFamily:FONTS.serifJp}}>{activeProduct.title}</h3><span className="text-[9px] tracking-widest uppercase opacity-50" style={{fontFamily:FONTS.sans}}>{activeProduct.category}</span></div>
-                                    <p className="text-sm md:text-base leading-relaxed opacity-80 mb-4 min-h-[4em]" style={{fontFamily:FONTS.serifJp}}>{activeProduct.desc}</p>
-                                    <div className="flex flex-col md:flex-row gap-2">
-                                        {activeProduct.link&&(<a href={activeProduct.link} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 border border-white/30 hover:bg-white hover:text-black px-4 py-3 transition-all duration-300"><ExternalLink size={12}/><span className="text-[10px] tracking-widest" style={{fontFamily:FONTS.sans}}>{activeProduct.linkText}</span></a>)}
-                                        {activeProduct.buyLink&&(<a href={activeProduct.buyLink} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 bg-white text-black border border-white hover:bg-transparent hover:text-white px-4 py-3 transition-all duration-300"><ShoppingBag size={12}/><span className="text-[10px] tracking-widest" style={{fontFamily:FONTS.sans}}>{activeProduct.buyText}</span></a>)}
-                                    </div>
+                            <div key={ap.id} className="max-w-2xl mx-auto w-full">
+                                <div className="flex justify-between items-baseline mb-2"><h3 className="text-lg md:text-xl font-medium" style={{fontFamily:ff}}>{L(ap.title,lang)}</h3><span className="text-[9px] tracking-widest uppercase opacity-50" style={{fontFamily:F.sans}}>{ap.category}</span></div>
+                                <p className="text-sm md:text-base leading-relaxed opacity-80 mb-4 min-h-[4em]" style={{fontFamily:ff}}>{L(ap.desc,lang)}</p>
+                                <div className="flex flex-col md:flex-row gap-2">
+                                    {ap.link&&(<a href={ap.link} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 border border-white/30 hover:bg-white hover:text-black px-4 py-3 transition-all duration-300"><ExternalLink size={12}/><span className="text-[10px] tracking-widest" style={{fontFamily:F.sans}}>{L(ap.linkText,lang)}</span></a>)}
+                                    {ap.buyLink&&(<a href={ap.buyLink} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 bg-white text-black border border-white hover:bg-transparent hover:text-white px-4 py-3 transition-all duration-300"><ShoppingBag size={12}/><span className="text-[10px] tracking-widest" style={{fontFamily:F.sans}}>{L(ap.buyText,lang)}</span></a>)}
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div className="py-16 flex justify-center px-4 border-t border-white/5 mt-8">
-                        <motion.button onClick={()=>setShowCaution(true)} whileHover={{scale:1.02}} whileTap={{scale:0.98}} className="flex items-center justify-center gap-4 px-10 py-5 w-full max-w-3xl bg-white border border-[#9B2C2C] text-[#9B2C2C] rounded-sm cursor-pointer shadow-lg">
-                            <AlertCircle size={20} className="shrink-0"/>
-                            <span className="text-base font-medium tracking-widest" style={{fontFamily:FONTS.serifJp}}><Bunsetsu>木製品を</Bunsetsu><Bunsetsu>取り扱う上での</Bunsetsu><Bunsetsu>ご留意点</Bunsetsu></span>
-                            <ChevronRight size={20} className="shrink-0"/>
-                        </motion.button>
-                    </div>
-                    <AnimatePresence>{selectedImage&&(<motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 p-4 cursor-zoom-out" onClick={()=>setSelectedImage(null)}><div className="relative max-w-5xl max-h-full w-full" onClick={e=>e.stopPropagation()}><img src={selectedImage} alt="" className="w-full h-full object-contain rounded-sm"/><button onClick={()=>setSelectedImage(null)} className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full hover:bg-white hover:text-black transition-colors pointer-events-auto"><X size={20}/></button></div></motion.div>)}</AnimatePresence>
-                    <AnimatePresence>{showCaution&&(<motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="fixed inset-0 z-[200] bg-black/95 overflow-auto cursor-pointer" onClick={()=>setShowCaution(false)}><div className="min-h-full flex items-start justify-center p-4 py-12"><div className="relative max-w-2xl w-full" onClick={e=>e.stopPropagation()}><img src="./caution.png" alt="製品の取り扱いと保証規定" className="w-full h-auto rounded-sm shadow-2xl"/><button onClick={()=>setShowCaution(false)} className="fixed top-4 right-4 bg-black/70 text-white p-3 rounded-full hover:bg-white hover:text-black transition-colors z-[210] shadow-lg"><X size={20}/></button></div></div></motion.div>)}</AnimatePresence>
-                </section>
-            );
-        };
-
-        const AwardsSection = () => {
-            const AWARD_ICONS = [
-                () => (
-                    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-16 h-16 mx-auto">
-                        <circle cx="40" cy="40" r="38" stroke="#8C8575" strokeWidth="1"/>
-                        <path d="M40 60 C40 60 20 45 20 30 C20 20 30 14 40 20 C50 14 60 20 60 30 C60 45 40 60 40 60Z" stroke="#1A1A1A" strokeWidth="1.2" fill="none"/>
-                        <line x1="40" y1="60" x2="40" y2="68" stroke="#1A1A1A" strokeWidth="1.2"/>
-                    </svg>
-                ),
-                () => (
-                    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-16 h-16 mx-auto">
-                        <circle cx="40" cy="40" r="38" stroke="#8C8575" strokeWidth="1"/>
-                        <circle cx="40" cy="40" r="6" stroke="#1A1A1A" strokeWidth="1.2"/>
-                        <circle cx="40" cy="40" r="14" stroke="#1A1A1A" strokeWidth="1"/>
-                        <circle cx="40" cy="40" r="22" stroke="#1A1A1A" strokeWidth="0.8"/>
-                        <circle cx="40" cy="40" r="30" stroke="#1A1A1A" strokeWidth="0.6"/>
-                    </svg>
-                ),
-                () => (
-                    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-16 h-16 mx-auto">
-                        <circle cx="40" cy="40" r="38" stroke="#8C8575" strokeWidth="1"/>
-                        <polygon points="40,18 44.9,33.1 61,33.1 47.6,42.4 52.4,57.6 40,48.2 27.6,57.6 32.4,42.4 19,33.1 35.1,33.1" stroke="#1A1A1A" strokeWidth="1.2" fill="none"/>
-                    </svg>
-                ),
-            ];
-            return (
-                <section id="awards" className="py-20 bg-[#F5F5F0]">
-                    <div className="px-6 md:px-12 w-full max-w-5xl mx-auto">
-                        <div className="mb-16 text-center"><h2 className="text-3xl font-light mb-2 text-[#1A1A1A]" style={{fontFamily:FONTS.serifEn}}>Awards</h2><p className="text-[10px] tracking-[0.2em] uppercase opacity-40" style={{fontFamily:FONTS.sans}}>受賞歴</p></div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            {AWARDS.map((award,i)=>{
-                                const IconComp = AWARD_ICONS[i];
-                                return (
-                                    <a key={award.id} href={award.link} target="_blank" rel="noopener noreferrer" className="group cursor-pointer block">
-                                        <motion.div whileHover={{y:-5}} className="text-center p-8 border border-[#1A1A1A]/10 hover:border-[#1A1A1A]/30 transition-all duration-300 bg-white">
-                                            <div className="mb-6 opacity-70 group-hover:opacity-100 transition-opacity"><IconComp/></div>
-                                            <span className="text-[10px] font-bold tracking-widest text-[#8C8575] block mb-2" style={{fontFamily:FONTS.sans}}>{award.product}</span>
-                                            <h3 className="text-sm font-medium mb-2 text-[#1A1A1A] leading-snug" style={{fontFamily:FONTS.serifJp}}>{award.title}</h3>
-                                            <div className="flex items-center justify-center gap-1 opacity-40 group-hover:opacity-70 transition-opacity mt-4">
-                                                <span className="text-[10px] tracking-widest" style={{fontFamily:FONTS.sans}}>VIEW</span>
-                                                <ExternalLink size={10}/>
-                                            </div>
-                                        </motion.div>
-                                    </a>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </section>
-            );
-        };
-
-        const PartnerSection = () => (
-            <section id="partner" className="py-24 px-6 md:px-20 bg-[#E0DCD1]">
-                <div className="max-w-4xl mx-auto">
-                    <div className="mb-16 text-center">
-                        <h2 className="text-3xl font-light mb-4 text-[#1A1A1A]" style={{fontFamily:FONTS.serifEn}}>Partners</h2>
-                        <p className="text-sm md:text-base leading-loose opacity-70 mb-8 max-w-2xl mx-auto" style={{fontFamily:FONTS.serifJp}}>リブランディングに関わってくれたパートナー</p>
-                        <div className="w-[1px] h-12 bg-[#1A1A1A]/20 mx-auto"></div>
-                    </div>
-                    <div className="mb-12">
-                        <h3 className="text-lg font-light mb-6 text-center opacity-60" style={{fontFamily:FONTS.serifEn}}>LINAWOOD Branding Team</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-                            {BRANDING_TEAM.map((p,i)=>(
-                                <motion.div key={i} initial={{opacity:0,y:10}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:i*0.1}} className="flex items-baseline justify-between border-b border-[#1A1A1A]/10 pb-2">
-                                    <div className="flex flex-col"><span className="text-[10px] font-bold tracking-widest opacity-40 mb-1" style={{fontFamily:FONTS.sans}}>{p.role}</span><span className="text-base font-medium text-[#1A1A1A]" style={{fontFamily:FONTS.serifEn}}>{p.name}</span></div>
-                                    {p.id&&(<a href={`https://instagram.com/${p.id.replace('@','')}`} target="_blank" rel="noopener noreferrer" className="text-xs opacity-50 hover:opacity-100 flex items-center gap-1" style={{fontFamily:FONTS.sans}}><Instagram size={10}/>{p.id}</a>)}
-                                </motion.div>
-                            ))}
-                        </div>
-                    </div>
-                    <div>
-                        <h3 className="text-lg font-light mb-6 text-center opacity-60" style={{fontFamily:FONTS.serifEn}}>Special Thanks & Advisors</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-                            {SPECIAL_THANKS.map((p,i)=>(
-                                <motion.div key={i} initial={{opacity:0,y:10}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:i*0.1}} className="flex items-baseline justify-between border-b border-[#1A1A1A]/10 pb-2">
-                                    <div className="flex flex-col"><span className="text-[10px] font-bold tracking-widest opacity-40 mb-1" style={{fontFamily:FONTS.serifJp}}>{p.role}</span><span className="text-base font-medium text-[#1A1A1A]" style={{fontFamily:FONTS.serifEn}}>{p.name}</span></div>
-                                    {p.id&&(<a href={`https://instagram.com/${p.id.replace('@','')}`} target="_blank" rel="noopener noreferrer" className="text-xs opacity-50 hover:opacity-100 flex items-center gap-1" style={{fontFamily:FONTS.sans}}><Instagram size={10}/>{p.id}</a>)}
-                                </motion.div>
-                            ))}
-                        </div>
-                    </div>
                 </div>
+                <div className="py-16 flex justify-center px-4 border-t border-white/5 mt-8"><motion.button onClick={()=>setShowCaution(true)} whileHover={{scale:1.02}} whileTap={{scale:0.98}} className="flex items-center justify-center gap-4 px-10 py-5 w-full max-w-3xl bg-white border border-[#9B2C2C] text-[#9B2C2C] rounded-sm cursor-pointer shadow-lg"><AlertCircle size={20} className="shrink-0"/><span className="text-base font-medium tracking-widest" style={{fontFamily:ff}}>{t('木製品を取り扱う上でのご留意点','Important notes on handling wood products')}</span><ChevronRight size={20} className="shrink-0"/></motion.button></div>
+                <AnimatePresence>{showCaution&&(<motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="fixed inset-0 z-[200] bg-black/95 overflow-auto cursor-pointer" onClick={()=>setShowCaution(false)}><div className="min-h-full flex items-start justify-center p-4 py-12"><div className="relative max-w-2xl w-full" onClick={e=>e.stopPropagation()}><img src="./caution.png" alt="製品の取り扱いと保証規定" className="w-full h-auto rounded-sm shadow-2xl"/><button onClick={()=>setShowCaution(false)} className="fixed top-4 right-4 bg-black/70 text-white p-3 rounded-full hover:bg-white hover:text-black transition-colors z-[210] shadow-lg"><X size={20}/></button></div></div></motion.div>)}</AnimatePresence>
             </section>
-        );
+        )};
 
-        const HistorySection = () => {
-            const ref = useRef(null);
-            const isInView = useInView(ref,{once:false,amount:0.2});
-            return (
-                <section id="history" className="py-20 px-6 md:px-20 bg-[#E0DCD1] text-[#1A1A1A] flex justify-center">
-                    <div className="max-w-3xl w-full">
-                        <div className="mb-12 text-center"><h2 className="text-2xl font-light mb-1" style={{fontFamily:FONTS.serifEn}}>Our Story</h2><div className="w-[1px] h-8 bg-[#1A1A1A]/20 mx-auto"></div></div>
-                        <div ref={ref} className="relative space-y-0">
-                            <motion.div initial={{height:0}} animate={isInView?{height:'100%'}:{height:0}} transition={{duration:2,ease:"easeInOut"}} className="absolute left-[3.5rem] md:left-[5rem] top-2 w-[1px] bg-[#1A1A1A]/10"/>
-                            {HISTORY.map((item,i)=>(
-                                <motion.div key={i} initial={{opacity:0,y:10}} animate={isInView?{opacity:1,y:0}:{opacity:0,y:10}} transition={{delay:i*0.15,duration:0.6}} className="flex items-start group py-3">
-                                    <div className="w-[3.5rem] md:w-[5rem] shrink-0 text-right pr-4 md:pr-6"><span className="text-[10px] md:text-[11px] font-bold tracking-widest opacity-40 block pt-1">{item.year.replace('年','')}</span></div>
-                                    <div className="flex-1 pl-4 md:pl-6 border-l border-transparent"><p className="text-[11px] md:text-[12px] leading-relaxed font-medium text-[#1A1A1A]/80" style={{fontFamily:FONTS.serifJp}}>{item.event}</p></div>
-                                </motion.div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-            );
-        };
+        const AwardsSection=()=>{const lang=useLang();const t=useT();const ff=lang==='en'?F.serifEn:F.serifJp;
+            const AI=[()=>(<svg viewBox="0 0 80 80" fill="none" className="w-16 h-16 mx-auto"><circle cx="40" cy="40" r="38" stroke="#8C8575" strokeWidth="1"/><path d="M40 60 C40 60 20 45 20 30 C20 20 30 14 40 20 C50 14 60 20 60 30 C60 45 40 60 40 60Z" stroke="#1A1A1A" strokeWidth="1.2" fill="none"/><line x1="40" y1="60" x2="40" y2="68" stroke="#1A1A1A" strokeWidth="1.2"/></svg>),()=>(<svg viewBox="0 0 80 80" fill="none" className="w-16 h-16 mx-auto"><circle cx="40" cy="40" r="38" stroke="#8C8575" strokeWidth="1"/><circle cx="40" cy="40" r="6" stroke="#1A1A1A" strokeWidth="1.2"/><circle cx="40" cy="40" r="14" stroke="#1A1A1A" strokeWidth="1"/><circle cx="40" cy="40" r="22" stroke="#1A1A1A" strokeWidth="0.8"/><circle cx="40" cy="40" r="30" stroke="#1A1A1A" strokeWidth="0.6"/></svg>),()=>(<svg viewBox="0 0 80 80" fill="none" className="w-16 h-16 mx-auto"><circle cx="40" cy="40" r="38" stroke="#8C8575" strokeWidth="1"/><polygon points="40,18 44.9,33.1 61,33.1 47.6,42.4 52.4,57.6 40,48.2 27.6,57.6 32.4,42.4 19,33.1 35.1,33.1" stroke="#1A1A1A" strokeWidth="1.2" fill="none"/></svg>)];
+            return(<section id="awards" className="py-20 bg-[#F5F5F0]"><div className="px-6 md:px-12 w-full max-w-5xl mx-auto">
+                <div className="mb-16 text-center"><h2 className="text-3xl font-light mb-2" style={{fontFamily:F.serifEn}}>Awards</h2><p className="text-[10px] tracking-[0.2em] uppercase opacity-40" style={{fontFamily:F.sans}}>{t('受賞歴','Award History')}</p></div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">{AWARDS.map((a,i)=>{const IC=AI[i];return(<a key={a.id} href={a.link} target="_blank" rel="noopener noreferrer" className="group cursor-pointer block"><motion.div whileHover={{y:-5}} className="text-center p-8 border border-[#1A1A1A]/10 hover:border-[#1A1A1A]/30 transition-all duration-300 bg-white"><div className="mb-6 opacity-70 group-hover:opacity-100 transition-opacity"><IC/></div><span className="text-[10px] font-bold tracking-widest text-[#8C8575] block mb-2" style={{fontFamily:F.sans}}>{L(a.product,lang)}</span><h3 className="text-sm font-medium mb-2 leading-snug" style={{fontFamily:ff}}>{L(a.title,lang)}</h3><div className="flex items-center justify-center gap-1 opacity-40 group-hover:opacity-70 transition-opacity mt-4"><span className="text-[10px] tracking-widest" style={{fontFamily:F.sans}}>VIEW</span><ExternalLink size={10}/></div></motion.div></a>)})}</div>
+            </div></section>)};
 
-        const CompanySection = () => {
-            const info = [
-                {label:"会社名",value:"緑川木材株式会社"},
-                {label:"代表者",value:"緑川 新之介"},
-                {label:"所在地",value:"〒078-1403 北海道上川郡愛別町字南町472番地4"},
-                {label:"事業内容",value:"木材加工、建材製造、家具販売"},
-            ];
-            return (
-                <section id="company" className="py-24 px-6 md:px-20 bg-[#F5F5F0] text-[#1A1A1A]">
-                    <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-16 items-start justify-center">
-                        <div className="md:w-1/3 space-y-8">
-                            <div><h2 className="text-3xl font-light mb-2" style={{fontFamily:FONTS.serifEn}}>Company</h2><div className="flex items-center gap-1 opacity-50"><MapPin size={14}/> Aibetsu, Hokkaido</div></div>
-                            <div className="space-y-4">
-                                <a href="https://maps.app.goo.gl/CWtvKeSF25LfbMxD8?g_st=ic" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 border border-[#1A1A1A]/20 px-6 py-4 hover:bg-[#1A1A1A] hover:text-white transition-all group w-full"><MapIcon size={16}/><span className="text-xs tracking-widest flex-1" style={{fontFamily:FONTS.sans}}>GOOGLE MAPS</span><ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity"/></a>
-                                <a href="mailto:midorikawamokuzai@gmail.com" className="flex items-center gap-3 border border-[#1A1A1A]/20 px-6 py-4 hover:bg-[#1A1A1A] hover:text-white transition-all group w-full"><Mail size={16}/><span className="text-xs tracking-widest flex-1" style={{fontFamily:FONTS.sans}}>CONTACT US</span><ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity"/></a>
-                                <a href="https://www.instagram.com/midorikawamokuzai" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 border border-[#1A1A1A]/20 px-6 py-4 hover:bg-[#1A1A1A] hover:text-white transition-all group w-full"><Instagram size={16}/><span className="text-xs tracking-widest flex-1" style={{fontFamily:FONTS.sans}}>INSTAGRAM</span><ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity"/></a>
-                            </div>
-                        </div>
-                        <div className="md:w-2/3 w-full grid grid-cols-1 gap-8">
-                            <div className="space-y-6">{info.map((item,i)=>(<div key={i} className="flex flex-col md:flex-row md:items-baseline border-b border-[#1A1A1A]/10 pb-3"><span className="text-[10px] font-bold tracking-widest opacity-40 w-32 mb-1 md:mb-0" style={{fontFamily:FONTS.sans}}>{item.label}</span><span className="font-light text-sm md:text-base" style={{fontFamily:FONTS.serifJp}}>{item.value}</span></div>))}</div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-[#1A1A1A]/5">
-                                <div className="flex flex-col"><span className="text-[10px] font-bold tracking-widest opacity-40 mb-2" style={{fontFamily:FONTS.sans}}>PHONE</span><a href="tel:0165865855" className="flex items-center gap-2 text-lg font-light hover:opacity-60 transition-opacity"><Phone size={16} className="opacity-50"/> 01658-6-5855</a></div>
-                                <div className="flex flex-col"><span className="text-[10px] font-bold tracking-widest opacity-40 mb-2" style={{fontFamily:FONTS.sans}}>FAX</span><div className="flex items-center gap-2 text-lg font-light"><Printer size={16} className="opacity-50"/> 01658-6-4388</div></div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            );
-        };
+        const PartnerSection=()=>{const lang=useLang();const t=useT();const ff=lang==='en'?F.serifEn:F.serifJp;return(
+            <section id="partner" className="py-24 px-6 md:px-20 bg-[#E0DCD1]"><div className="max-w-4xl mx-auto">
+                <div className="mb-16 text-center"><h2 className="text-3xl font-light mb-4" style={{fontFamily:F.serifEn}}>Partners</h2><p className="text-sm md:text-base leading-loose opacity-70 mb-8 max-w-2xl mx-auto" style={{fontFamily:ff}}>{t('リブランディングに関わってくれたパートナー','Partners who contributed to our rebranding')}</p><div className="w-[1px] h-12 bg-[#1A1A1A]/20 mx-auto"></div></div>
+                <div className="mb-12"><h3 className="text-lg font-light mb-6 text-center opacity-60" style={{fontFamily:F.serifEn}}>LINAWOOD Branding Team</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">{TEAM.map((p,i)=>(<motion.div key={i} initial={{opacity:0,y:10}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:i*0.1}} className="flex items-baseline justify-between border-b border-[#1A1A1A]/10 pb-2"><div className="flex flex-col"><span className="text-[10px] font-bold tracking-widest opacity-40 mb-1" style={{fontFamily:F.sans}}>{p.role}</span><span className="text-base font-medium" style={{fontFamily:F.serifEn}}>{p.name}</span></div>{p.id&&(<a href={`https://instagram.com/${p.id.replace('@','')}`} target="_blank" rel="noopener noreferrer" className="text-xs opacity-50 hover:opacity-100 flex items-center gap-1" style={{fontFamily:F.sans}}><Instagram size={10}/>{p.id}</a>)}</motion.div>))}</div></div>
+                <div><h3 className="text-lg font-light mb-6 text-center opacity-60" style={{fontFamily:F.serifEn}}>Special Thanks & Advisors</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">{THANKS.map((p,i)=>(<motion.div key={i} initial={{opacity:0,y:10}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:i*0.1}} className="flex items-baseline justify-between border-b border-[#1A1A1A]/10 pb-2"><div className="flex flex-col"><span className="text-[10px] font-bold tracking-widest opacity-40 mb-1" style={{fontFamily:F.sans}}>{L(p.role,lang)}</span><span className="text-base font-medium" style={{fontFamily:F.serifEn}}>{p.name}</span></div>{p.id&&(<a href={`https://instagram.com/${p.id.replace('@','')}`} target="_blank" rel="noopener noreferrer" className="text-xs opacity-50 hover:opacity-100 flex items-center gap-1" style={{fontFamily:F.sans}}><Instagram size={10}/>{p.id}</a>)}</motion.div>))}</div></div>
+            </div></section>
+        )};
 
-        const Footer = () => (
-            <footer id="contact" className="bg-[#1A1A1A] text-[#E0DCD1] py-12 px-6">
-                <div className="max-w-7xl mx-auto flex justify-between items-center">
-                    <div><h2 className="text-2xl font-medium mb-1" style={{fontFamily:FONTS.serifEn}}>Midorikawa Mokuzai</h2><p className="opacity-40 text-[10px] tracking-widest uppercase" style={{fontFamily:FONTS.sans}}>Hokkaido, Japan</p></div>
-                    <div className="text-[10px] opacity-20" style={{fontFamily:FONTS.sans}}>&copy; 2026 MIDORIKAWA MOKUZAI</div>
+        const HistorySection=()=>{const ref=useRef(null);const iv=useInView(ref,{once:false,amount:0.2});const lang=useLang();const ff=lang==='en'?F.serifEn:F.serifJp;return(
+            <section id="history" className="py-20 px-6 md:px-20 bg-[#E0DCD1] flex justify-center"><div className="max-w-3xl w-full">
+                <div className="mb-12 text-center"><h2 className="text-2xl font-light mb-1" style={{fontFamily:F.serifEn}}>Our Story</h2><div className="w-[1px] h-8 bg-[#1A1A1A]/20 mx-auto"></div></div>
+                <div ref={ref} className="relative space-y-0">
+                    <motion.div initial={{height:0}} animate={iv?{height:'100%'}:{height:0}} transition={{duration:2,ease:"easeInOut"}} className="absolute left-[3.5rem] md:left-[5rem] top-2 w-[1px] bg-[#1A1A1A]/10"/>
+                    {HISTORY.map((item,i)=>(<motion.div key={i} initial={{opacity:0,y:10}} animate={iv?{opacity:1,y:0}:{opacity:0,y:10}} transition={{delay:i*0.15,duration:0.6}} className="flex items-start py-3"><div className="w-[3.5rem] md:w-[5rem] shrink-0 text-right pr-4 md:pr-6"><span className="text-[10px] md:text-[11px] font-bold tracking-widest opacity-40 block pt-1">{L(item.year,lang)}</span></div><div className="flex-1 pl-4 md:pl-6 border-l border-transparent"><p className="text-[11px] md:text-[12px] leading-relaxed font-medium opacity-80" style={{fontFamily:ff}}>{L(item.event,lang)}</p></div></motion.div>))}
                 </div>
-            </footer>
-        );
+            </div></section>
+        )};
 
-        const FloatingNav = () => {
-            const scrollToTop = ()=>window.scrollTo({top:0,behavior:'smooth'});
-            const scrollToBottom = ()=>window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
-            return (
-                <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-2 mix-blend-difference text-[#E0DCD1]">
-                    <motion.button initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:2}} onClick={scrollToTop} className="w-10 h-10 border border-[#E0DCD1]/50 rounded-full flex items-center justify-center hover:bg-[#E0DCD1] hover:text-[#1A1A1A] transition-colors duration-300"><ArrowUp size={16}/></motion.button>
-                    <motion.button initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:2.1}} onClick={scrollToBottom} className="w-10 h-10 border border-[#E0DCD1]/50 rounded-full flex items-center justify-center hover:bg-[#E0DCD1] hover:text-[#1A1A1A] transition-colors duration-300"><ArrowDown size={16}/></motion.button>
+        const CompanySection=()=>{const lang=useLang();const t=useT();const ff=lang==='en'?F.serifEn:F.serifJp;
+            const info=[{label:t("会社名","Company"),value:t("緑川木材株式会社","Midorikawa Mokuzai Co., Ltd.")},{label:t("代表者","President"),value:t("緑川 新之介","Shinnosuke Midorikawa")},{label:t("所在地","Address"),value:t("〒078-1403 北海道上川郡愛別町字南町472番地4","472-4 Minamimachi, Aibetsu, Kamikawa, Hokkaido 078-1403, Japan")},{label:t("事業内容","Business"),value:t("木材加工、建材製造、家具販売","Wood processing, building materials, furniture sales")}];
+            return(<section id="company" className="py-24 px-6 md:px-20 bg-[#F5F5F0]"><div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-16 items-start justify-center">
+                <div className="md:w-1/3 space-y-8"><div><h2 className="text-3xl font-light mb-2" style={{fontFamily:F.serifEn}}>Company</h2><div className="flex items-center gap-1 opacity-50"><MapPin size={14}/> Aibetsu, Hokkaido</div></div>
+                    <div className="space-y-4">
+                        <a href="https://maps.app.goo.gl/CWtvKeSF25LfbMxD8?g_st=ic" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 border border-[#1A1A1A]/20 px-6 py-4 hover:bg-[#1A1A1A] hover:text-white transition-all group w-full"><MapIcon size={16}/><span className="text-xs tracking-widest flex-1" style={{fontFamily:F.sans}}>GOOGLE MAPS</span><ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity"/></a>
+                        <a href="mailto:midorikawamokuzai@gmail.com" className="flex items-center gap-3 border border-[#1A1A1A]/20 px-6 py-4 hover:bg-[#1A1A1A] hover:text-white transition-all group w-full"><Mail size={16}/><span className="text-xs tracking-widest flex-1" style={{fontFamily:F.sans}}>CONTACT US</span><ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity"/></a>
+                        <a href="https://www.instagram.com/midorikawamokuzai" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 border border-[#1A1A1A]/20 px-6 py-4 hover:bg-[#1A1A1A] hover:text-white transition-all group w-full"><Instagram size={16}/><span className="text-xs tracking-widest flex-1" style={{fontFamily:F.sans}}>INSTAGRAM</span><ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity"/></a>
+                    </div>
                 </div>
-            );
-        };
+                <div className="md:w-2/3 w-full grid grid-cols-1 gap-8">
+                    <div className="space-y-6">{info.map((item,i)=>(<div key={i} className="flex flex-col md:flex-row md:items-baseline border-b border-[#1A1A1A]/10 pb-3"><span className="text-[10px] font-bold tracking-widest opacity-40 w-32 mb-1 md:mb-0" style={{fontFamily:F.sans}}>{item.label}</span><span className="font-light text-sm md:text-base" style={{fontFamily:ff}}>{item.value}</span></div>))}</div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-[#1A1A1A]/5"><div className="flex flex-col"><span className="text-[10px] font-bold tracking-widest opacity-40 mb-2" style={{fontFamily:F.sans}}>PHONE</span><a href="tel:0165865855" className="flex items-center gap-2 text-lg font-light hover:opacity-60 transition-opacity"><Phone size={16} className="opacity-50"/> 01658-6-5855</a></div><div className="flex flex-col"><span className="text-[10px] font-bold tracking-widest opacity-40 mb-2" style={{fontFamily:F.sans}}>FAX</span><div className="flex items-center gap-2 text-lg font-light"><Printer size={16} className="opacity-50"/> 01658-6-4388</div></div></div>
+                </div>
+            </div></section>)};
 
-        const App = () => (
-            <>
-                <Navigation/>
-                <main>
-                    <HeroSection/>
-                    <ConceptSection/>
-                    <ValuesSection/>
-                    <WoodTypesSection/>
-                    <ProductsSection/>
-                    <AwardsSection/>
-                    <PartnerSection/>
-                    <HistorySection/>
-                    <CompanySection/>
-                </main>
-                <Footer/>
-                <FloatingNav/>
-            </>
-        );
+        const Footer=()=>(<footer id="contact" className="bg-[#1A1A1A] text-[#E0DCD1] py-12 px-6"><div className="max-w-7xl mx-auto flex justify-between items-center"><div><h2 className="text-2xl font-medium mb-1" style={{fontFamily:F.serifEn}}>Midorikawa Mokuzai</h2><p className="opacity-40 text-[10px] tracking-widest uppercase" style={{fontFamily:F.sans}}>Hokkaido, Japan</p></div><div className="text-[10px] opacity-20" style={{fontFamily:F.sans}}>&copy; 2026 MIDORIKAWA MOKUZAI</div></div></footer>);
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App/>);
+        const FloatingNav=()=>{const st=()=>window.scrollTo({top:0,behavior:'smooth'});const sb=()=>window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});return(<div className="fixed bottom-8 right-8 z-50 flex flex-col gap-2 mix-blend-difference text-[#E0DCD1]"><motion.button initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:2}} onClick={st} className="w-10 h-10 border border-[#E0DCD1]/50 rounded-full flex items-center justify-center hover:bg-[#E0DCD1] hover:text-[#1A1A1A] transition-colors duration-300"><ArrowUp size={16}/></motion.button><motion.button initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:2.1}} onClick={sb} className="w-10 h-10 border border-[#E0DCD1]/50 rounded-full flex items-center justify-center hover:bg-[#E0DCD1] hover:text-[#1A1A1A] transition-colors duration-300"><ArrowDown size={16}/></motion.button></div>)};
+
+        const App=()=>{const[lang,setLang]=useState('jp');return(<LangContext.Provider value={lang}><LangToggle lang={lang} setLang={setLang}/><Navigation/><main><HeroSection/><ConceptSection/><ValuesSection/><WoodTypesSection/><ProductsSection/><AwardsSection/><PartnerSection/><HistorySection/><CompanySection/></main><Footer/><FloatingNav/></LangContext.Provider>)};
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
     </script>
 </body>
 </html>
