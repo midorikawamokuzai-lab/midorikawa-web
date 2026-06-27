@@ -72,7 +72,7 @@
             {id:'kaba',name:{jp:'カバ',en:'Kaba (Birch)'},desc:{jp:'北海道らしい景観を彩る、道内で最も蓄積が多い落葉広葉樹。家具材、合板材、床板、爪楊枝など。特にマカバは銘木として高値で取引されている。',en:"Hokkaido's most abundant hardwood. Used for furniture, plywood, flooring. Makaba (true birch) is prized as premium wood."},img:'https://local-blush-trb8yb7omb.edgeone.app/IMG_9623.png'},
         ];
         const PRODUCTS=[
-            {id:1,title:"LINAWOOD",category:"Signature",desc:{jp:"3層構造の積層パネル。繊維を直交させることで強度と寸法安定性を確保。断面のストライプは構造そのものが生む模様。針葉樹・広葉樹対応。ウッドデザイン賞2024 / みらいのたね賞受賞。",en:"A three-layer cross-laminated panel. Cross-grain layering ensures strength and stability. The striped cross-section is a pattern born from structure itself. Wood Design Award 2024."},src:"https://iinawood.edgeone.app/__lina_KV02.jpeg",link:"https://linawood.jp/",linkText:{jp:"公式サイトへ",en:"Official Site"},buyLink:SHOP+"/products/linawood",buyText:{jp:"ご購入はこちらから",en:"Purchase"}},
+            {id:1,title:"LINAWOOD",category:"Signature",desc:{jp:"3層構造の積層パネル。繊維を直交させることで強度と寸法安定性を確保。断面のストライプは構造そのものが生む模様。針葉樹・広葉樹対応。ウッドデザイン賞2024 / みらいのたね賞受賞。",en:"A three-layer cross-laminated panel. Cross-grain layering ensures strength and stability. The striped cross-section is a pattern born from structure itself. Wood Design Award 2024."},src:"https://iinawood.edgeone.app/__lina_KV02.jpeg",buyLink:SHOP+"/products/linawood",buyText:{jp:"ご購入はこちらから",en:"Purchase"}},
             {id:2,title:{jp:"外壁材",en:"Exterior Cladding"},category:"Exterior",desc:{jp:"北海道産カラマツ・トドマツの外壁材。耐候性が高く、経年で銀化する。仕様・数量はお問い合わせください。",en:"Hokkaido Larch and Fir cladding. Highly weather-resistant, developing a silver patina over time. Contact us for details."},src:"https://karagai.edgeone.app/DSCF8099.jpeg"},
             {id:3,title:{jp:"カラマツフローリング",en:"Larch Flooring"},category:"Flooring",desc:{jp:"硬度が高く傷がつきにくい。赤みのある木目。土足対応。仕様・数量はお問い合わせください。",en:"Hard and scratch-resistant with warm reddish grain. Suitable for heavy traffic. Contact us for details."},src:"https://scornful-turquoise-toijnloplt.edgeone.app/DSCF8083.jpeg"},
             {id:4,title:{jp:"トドマツフローリング",en:"Fir Flooring"},category:"Flooring",desc:{jp:"白く明るい色味。柔らかく温かみのある踏み心地。住宅向け。仕様・数量はお問い合わせください。",en:"Bright white tones with a soft, warm feel underfoot. Ideal for residential use. Contact us for details."},src:"https://todofloor.edgeone.app/DSCF8085.jpeg"},
@@ -179,6 +179,25 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <div className="px-6 md:px-12 w-full max-w-7xl mx-auto mt-12 relative z-30">
+                    <div className="max-w-3xl mx-auto flex flex-col gap-3">
+                        <a href="https://linawood.jp/" target="_blank" rel="noopener noreferrer" className="group flex items-center justify-between gap-6 bg-[#E0DCD1] text-[#1A1A1A] border border-[#E0DCD1] hover:bg-transparent hover:text-[#E0DCD1] px-6 md:px-8 py-5 transition-all duration-300">
+                            <div>
+                                <span className="block text-[9px] tracking-[0.24em] uppercase opacity-50 mb-1" style={{fontFamily:F.sans}}>Signature Product</span>
+                                <span className="text-xl md:text-2xl font-light tracking-wide" style={{fontFamily:F.serifEn}}>LINAWOOD</span>
+                            </div>
+                            <span className="flex items-center gap-3 text-[10px] tracking-widest whitespace-nowrap" style={{fontFamily:F.sans}}>{t('詳細ページ','Official Site')}<ExternalLink size={14} className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"/></span>
+                        </a>
+                        <a href="./products/index.html" className="group flex items-center justify-between gap-6 bg-[#E0DCD1] text-[#1A1A1A] border border-[#E0DCD1] hover:bg-transparent hover:text-[#E0DCD1] px-6 md:px-8 py-5 transition-all duration-300">
+                            <div>
+                                <span className="block text-[9px] tracking-[0.24em] uppercase opacity-50 mb-1" style={{fontFamily:F.sans}}>Product Information</span>
+                                <span className="text-base md:text-lg" style={{fontFamily:ff}}>{t('各製品情報はこちら','View all product details')}</span>
+                            </div>
+                            <ArrowRight size={18} className="shrink-0 transition-transform group-hover:translate-x-2"/>
+                        </a>
                     </div>
                 </div>
                 <div className="py-16 flex justify-center px-4 border-t border-white/5 mt-8"><motion.button onClick={()=>setShowCaution(true)} whileHover={{scale:1.02}} whileTap={{scale:0.98}} className="flex items-center justify-center gap-4 px-10 py-5 w-full max-w-3xl bg-white border border-[#9B2C2C] text-[#9B2C2C] rounded-sm cursor-pointer shadow-lg"><AlertCircle size={20} className="shrink-0"/><span className="text-base font-medium tracking-widest" style={{fontFamily:ff}}>{t('木製品を取り扱う上でのご留意点','Important notes on handling wood products')}</span><ChevronRight size={20} className="shrink-0"/></motion.button></div>
